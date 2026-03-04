@@ -11,12 +11,14 @@ git clone https://github.com/amirdjalali/comp-data_group-project.git
 cd your-repo
 ```
 
-Set your identity (first-time Git users)
+## Set your identity (first-time Git users)
 
 ```bash
 git config --global user.name "Your Name"
 git config --global user.email "you@email.com"
 ```
+
+## How to make changes
 
 Always pull latest changes first. ```pull``` synchronizes all the changes locally.
 
