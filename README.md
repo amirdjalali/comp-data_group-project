@@ -24,7 +24,7 @@ Always pull latest changes first. ```pull``` synchronizes all the changes locall
 
 ```bash
 git pull origin main
-
+```
 Make changes, then stage and commit. Commit saves changes on your local machine.
 
 ```bash
