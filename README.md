@@ -123,6 +123,83 @@ from handlers import CitationQueryHandler
 
 [def]: handler.png
 
+![Structure of the engine classes](img/engines.png)
+
+Based on the UML, here's the full structure combining both diagrams:
+
+```
+project/
+├── handlers/
+│   ├── __init__.py
+│   ├── handler.py
+│   ├── upload_handler.py
+│   ├── query_handler.py
+│   ├── citation_upload_handler.py
+│   ├── bibliographic_entity_upload_handler.py
+│   ├── citation_query_handler.py
+│   └── bibliographic_entity_query_handler.py
+├── engines/
+│   ├── __init__.py
+│   ├── basic_query_engine.py
+│   └── full_query_engine.py
+├── tests/
+│   └── __init__.py
+└── pyproject.toml
+```
+
+The ```engines/``` folder is separate from ```handlers/``` because they're a distinct layer — engines use handlers (via ```citationQuery``` and ```bibliographicEntityQuery``` attributes), they don't inherit from them.
+
+The import flow would be:
+
+```
+handler.py
+    ↑
+upload_handler.py / query_handler.py
+    ↑
+citation_query_handler.py / etc.
+    ↑
+basic_query_engine.py
+    ↑
+full_query_engine.py
+```
+
+![Structure of the data model classes](img/model.png)
+
+Add a model/ folder for these:
+
+```
+project/
+├── model/
+│   ├── __init__.py
+│   ├── identifiable_entity.py
+│   ├── bibliographic_entity.py
+│   ├── citation.py
+│   ├── journal_self_citation.py
+│   └── author_self_citation.py
+├── handlers/
+│   └── ...
+├── engines/
+│   └── ...
+├── tests/
+│   └── __init__.py
+└── pyproject.toml
+```
+
+Inheritance mirrors the UML:
+
+```
+IdentifiableEntity
+├── BibliographicEntity
+└── Citation
+    ├── JournalSelfCitation
+    └── AuthorSelfCitation
+```
+
+```Citation``` also holds references to two ```BibliographicEntity``` instances (```getCitingEntity``` and ```getCitedEntity```), so ```citation.py``` will need to import from ```bibliographic_entity.py```.
+
+The general rule of thumb: separate folders for separate concerns — data models don't belong mixed in with handlers or engines.
+
+
 # What is ```__init__.py```?
 
 It's a special file that marks a directory as a Python package (i.e. importable module), and optionally controls what gets exported from it.
