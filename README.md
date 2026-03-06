@@ -1,5 +1,11 @@
 # comp-data_group-project
 
+This is an implementation of the [project](https://github.com/comp-data/2025-2026/tree/main/docs/project) for the 2025-2026 [Computational Management of Data](https://github.com/comp-data/2025-2026) course at the [University of Bologna](https://unibo.it).
+
+
+# Working on Github
+
+
 Hi all, I set up the github repo to collaborate on the comp-data group project.
 
 We can work on separate files on separate machines, then push the changes on this repository.
