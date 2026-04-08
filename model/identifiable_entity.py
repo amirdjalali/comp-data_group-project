@@ -1,6 +1,8 @@
 class IdentifiableEntity:
-    def __init__(self, identifiers: str) -> None:
-        self.id = set(identifiers)
+    def __init__(self, identifiers: list[str]) -> None:
+        self.id = set()
+        for identifier in identifiers:
+            self.id.add(identifier)
 
     def getIds(self) -> list[str]:
-        return self.id
+        return list(self.id)
