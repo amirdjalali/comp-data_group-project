@@ -1,7 +1,7 @@
 from identifiable_entity import IdentifiableEntity
 
 class BibliographicEntity(IdentifiableEntity):
-    def __init__(self, identifiers: list[str], title: str, author: list[str], publication_date: str, venue: str) -> None:
+    def __init__(self, identifiers: list[str], author: list[str], title: str = None, publication_date: str = None, venue: str = None) -> None:
         super().__init__(identifiers)
         self.title = title
         self.author = author
