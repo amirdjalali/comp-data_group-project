@@ -13,5 +13,5 @@ class UploadHandler(Handler):
 
     # no __init__ method needed if no additional attributes are added
 
-    def PushDataToDbPath(self, path: str) -> bool:
-        pass
+    def PushDataToDb(self, path: str) -> bool:
+        Return True
