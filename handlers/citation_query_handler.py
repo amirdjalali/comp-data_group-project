@@ -11,6 +11,7 @@ class CitationQueryHandler(QueryHandler):
             oci = "https://w3id.org/oc/index/ci/" + id
         else:
             oci = id
+        #try to understand if we need to check whether the id needs to be checked or not from citation_upload_handler.py (maybe not, since the upload handler already checks that the OCIs are in the correct format, but maybe we can add this check just to be sure)
         
         query = f"""
                 PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -25,12 +26,24 @@ class CitationQueryHandler(QueryHandler):
                     <{oci}> cito:hasCitationTimeSpan ?timespan .
                 }}
             """
-
+            #<{oci}> is used as an alternative of FILTER 
         return self.get(self.getDbPathOrUrl(), query, True) #Revise the return 
 
     def getAllCitations(self) -> pd.DataFrame:
+        query = f"""
+                PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                PREFIX cito <http://purl.org/spar/cito/>
 
-        return pd.DataFrame()
+                SELECT ?oci ?citing ?cited ?creation ?timespan
+                WHERE {{
+                    ?oci a cito:Citation .
+                    ?oci cito:hasCitingEntity ?citing .
+                    ?oci cito:hasCitedEntity ?cited .
+                    ?oci cito:hasCitationCreationDate ?creation .
+                    ?oci cito:hasCitationTimeSpan ?timespan .
+                }}
+            """
+        return self.get(self.getDbPathOrUrl(), query, True) #Revise the return
 
     def getAllAuthorSelfCitations(self) -> pd.DataFrame:
 
