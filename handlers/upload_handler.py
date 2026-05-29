@@ -1,4 +1,4 @@
-from .handler import Handler
+from handler import Handler
 
 class UploadHandler(Handler):
     """
@@ -14,4 +14,4 @@ class UploadHandler(Handler):
     # no __init__ method needed if no additional attributes are added
 
     def PushDataToDb(self, path: str) -> bool:
-        Return True
+        return True
