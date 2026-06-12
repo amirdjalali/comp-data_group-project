@@ -18,7 +18,7 @@ class CitationUploadHandler(UploadHandler):
 
         oci_base_url = "https://w3id.org/oc/index/ci/"
 
-        citations = read_csv("../data/dh_citations.csv",
+        citations = read_csv("data/dh_citations.csv",
                             keep_default_na=False,
                             dtype={
                                 "oci": "string",
