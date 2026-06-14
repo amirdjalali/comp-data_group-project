@@ -4,4 +4,10 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "pandas>=3.0.3",
+    "rdflib>=7.6.0",
+    "sparql-dataframe>=0.4",
+    "sparqlite>=1.2.1",
+    "tqdm>=4.67.3",
+]

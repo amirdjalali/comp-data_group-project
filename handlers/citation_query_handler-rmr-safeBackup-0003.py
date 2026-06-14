@@ -1,71 +1,16 @@
-from .query_handler import QueryHandler
+from query_handler import QueryHandler
 import pandas as pd
 from sparql_dataframe import get
 import re
-from pandas import read_csv, Series
-
 
 class CitationQueryHandler(QueryHandler):
 
-    #MISTAKE: getById is for the general queryHandler
-
-    # def getById(self, id: str) -> pd.DataFrame:
-        
-    #     endpoint = self.getDbPathOrUrl()
-
-    
-    #     oci = id
-    #     if "https://w3id.org/oc/index/ci/" not in oci:
-    #         oci = "https://w3id.org/oc/index/ci/" + id
-    #     #try to understand if we need to check whether the id needs to be checked or not from citation_upload_handler.py (maybe not, since the upload handler already checks that the OCIs are in the correct format, but maybe we can add this check just to be sure)
-        
-    #     query = f"""
-    #             PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-    #             PREFIX cito: <http://purl.org/spar/cito/>
-                
-    #             SELECT ?oci ?citing ?cited ?creation ?timespan ?journal_sc ?author_sc
-    #             WHERE {{
-                
-    #                 BIND(<{oci}> AS ?oci)
-
-    #                 ?oci a cito:Citation .
-    #                 ?oci cito:hasCitingEntity ?citing .
-    #                 ?oci cito:hasCitedEntity ?cited .
-    #                 ?oci cito:hasCitationCreationDate ?creation .
-    #                 ?oci cito:hasCitationTimeSpan ?timespan .
-
-    #                 BIND(IF(EXISTS {{ ?oci a cito:JournalSelfCitation }}, "True", "False") AS ?journal_sc)
-    #                 BIND(IF(EXISTS {{ ?oci a cito:AuthorSelfCitation }}, "True", "False") AS ?author_sc)
-    #             }}
-    #         """
-        
-    #     df_sparql = get(endpoint, query, True)
-    #     return df_sparql
+    def getById(self, id: str) -> pd.DataFrame:
+        return pd.DataFrame()
 
     def getAllCitations(self) -> pd.DataFrame:
+        return pd.DataFrame()
 
-        endpoint = self.getDbPathOrUrl()
-
-        query = f"""
-                PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-                PREFIX cito: <http://purl.org/spar/cito/>
-
-                SELECT ?oci ?citing ?cited ?creation ?timespan ?journal_sc ?author_sc
-                WHERE {{
-                    ?oci a cito:Citation .
-                    ?oci cito:hasCitingEntity ?citing .
-                    ?oci cito:hasCitedEntity ?cited .
-                    ?oci cito:hasCitationCreationDate ?creation .
-                    ?oci cito:hasCitationTimeSpan ?timespan .
-
-                    BIND(IF(EXISTS {{ ?oci a cito:JournalSelfCitation }}, "True", "False") AS ?journal_sc)
-                    BIND(IF(EXISTS {{ ?oci a cito:AuthorSelfCitation }}, "True", "False") AS ?author_sc)
-                }}
-            """
-        
-        df_sparql = get(endpoint, query, True)
-        return df_sparql
-    
     def getAllAuthorSelfCitations(self) -> pd.DataFrame:
 
         # first connect to db
@@ -85,7 +30,6 @@ class CitationQueryHandler(QueryHandler):
                     ?oci cito:hasCitedEntity ?cited .
                     ?oci cito:hasCitationCreationDate ?creation .
                     ?oci cito:hasCitationTimeSpan ?timespan .
-
                     BIND(IF(EXISTS { ?oci a cito:JournalSelfCitation }, "True", "False") AS ?journal_sc)
                 }
         """
@@ -141,18 +85,9 @@ class CitationQueryHandler(QueryHandler):
        
         return df_sparql
 
-    def getCitationsWithinTimespan(self, min_timespan: str = None, max_timespan: str = None) -> pd.DataFrame:
+    def getCitationsWithinTimespan(self, min_timespan: str, max_timespan: str) -> pd.DataFrame:
         # Works with timespans in formats PxY, PxYyM, PxYyMzD, but also without "P"
         # Roughly convert input timespans in days
-
-        if not min_timespan and max_timespan:
-            df_query = "timespan_days <= @max_timespan_days"
-        elif not max_timespan and min_timespan:
-            df_query = "timespan_days >= @min_timespan_days"
-        elif not max_timespan and not min_timespan:
-            df_query = "oci == oci"
-        else:
-            df_query = "timespan_days >= @min_timespan_days and timespan_days <= @max_timespan_days"
 
         min_timespan_days = self.duration_to_days(min_timespan)
         max_timespan_days = self.duration_to_days(max_timespan)
@@ -178,7 +113,7 @@ class CitationQueryHandler(QueryHandler):
                 BIND(IF(EXISTS { ?oci a cito:JournalSelfCitation }, "True", "False") AS ?journal_sc)
                 BIND(IF(EXISTS { ?oci a cito:AuthorSelfCitation }, "True", "False") AS ?author_sc)
                 
-                #FILTER (?timespan != "")
+                FILTER (?timespan != "")
             }
         """
         # transform the tripes into a dataframe with the following columns: oci,citing,cited,creation,timespan,journal_sc
@@ -188,7 +123,7 @@ class CitationQueryHandler(QueryHandler):
         df_sparql["timespan_days"] = df_sparql["timespan"].apply(self.duration_to_days)
 
         # Filter the results according to timespans
-        df_sparql = df_sparql.query(df_query)
+        df_sparql = df_sparql.query("timespan_days >= @min_timespan_days and timespan_days <= @max_timespan_days")
 
         # Remove timespan_days column
         df_sparql.drop(columns=["timespan_days"], inplace=True)
@@ -203,19 +138,13 @@ class CitationQueryHandler(QueryHandler):
         # df_sparql["author_sc"] = df_sparql["author_sc"].astype("bool")
        
         return df_sparql
+        
+        return
     
-
-    def getCitationsWithinDate(self, start_date: str = None, end_date: str = None) -> pd.DataFrame:
+    def getCitationsWithinDate(self, start_date: str, end_date: str) -> pd.DataFrame:
         # Works with dates in formats YYYY, YYYY-MM, YYYY-MM-DD
         # In case YYYY is provided, it considers YYYY-01-01
         # In case YYYY-MM is provided, it considers YYYY-MM-01
-
-        filters = ""
-
-        if end_date:
-            filters += f"    FILTER (?creation <= \"{end_date}\"^^xsd:date)\n"
-        if start_date:
-            filters += f"    FILTER (?creation >= \"{start_date}\"^^xsd:date)"
     
         # first connect to db
         endpoint = "http://localhost:9999/blazegraph/sparql"
@@ -228,7 +157,6 @@ class CitationQueryHandler(QueryHandler):
             PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
 
             SELECT ?oci ?citing ?cited ?creation ?timespan ?journal_sc ?author_sc
-            
             WHERE {
                 ?oci a cito:Citation .
                 ?oci cito:hasCitingEntity ?citing .
@@ -238,10 +166,11 @@ class CitationQueryHandler(QueryHandler):
                 
                 BIND(IF(EXISTS { ?oci a cito:JournalSelfCitation }, "True", "False") AS ?journal_sc)
                 BIND(IF(EXISTS { ?oci a cito:AuthorSelfCitation }, "True", "False") AS ?author_sc)
-        """
-
-        query = query + filters + "\n}\nORDER BY ?creation"
-        #print(query)
+                
+                FILTER (?creation >= "START_DATE"^^xsd:date && ?creation <= "END_DATE"^^xsd:date)
+            }
+            ORDER BY ?creation
+        """.replace("START_DATE", start_date).replace("END_DATE", end_date)
 
         # transform the tripes into a dataframe with the following columns: oci,citing,cited,creation,timespan,journal_sc
         df_sparql = get(endpoint, query, True)
@@ -256,7 +185,6 @@ class CitationQueryHandler(QueryHandler):
         # df_sparql["author_sc"] = df_sparql["author_sc"].astype("bool")
        
         return df_sparql
-        
     
     @staticmethod
     def duration_to_days(timespan: str) -> int:
@@ -291,7 +219,8 @@ class CitationQueryHandler(QueryHandler):
         timespan_days = years * 365 + months * 30 + days
 
         # It works also with negative timespans!!!
-        if timespan[0] == "-":
+        negative_match = re.search(r"-", timespan)
+        if negative_match:
             return -timespan_days
         else:
             return timespan_days
@@ -313,31 +242,7 @@ if __name__ == "__main__":
     #print(df_citations_within_dates.dtypes)
     #print(df_citations_within_dates)
 
-    #df_citations_within_timespans = handler.getCitationsWithinTimespan("-99Y", "0")
-    #print(df_citations_within_timespans.dtypes)
-    #print(df_citations_within_timespans)
-    #print(handler.getById("https://w3id.org/oc/index/ci/0603927919-0603927914"))
-
-    # citations = read_csv("../data/dh_citations.csv",
-    #                         keep_default_na=False,
-    #                         dtype={
-    #                             "oci": "string",
-    #                             "citing": "string",
-    #                             "cited": "string",
-    #                             "creation": "string",
-    #                             "timespan": "string",
-    #                             "journal_sc": "string",
-    #                             "author_sc": "string"
-    #                         })
-    all_citations = handler.getAllCitations()
-    print(all_citations)
-
-
-    # missing_ones = citations[~citations["oci"].isin(all_citations["oci"].str.replace("https://w3id.org/oc/index/ci/",""))]
-    # missing_ones.to_csv("missing.csv", index=False)
-    #print(citations["oci"].duplicated().sum())
-    #pprint(missing_ones)
-    #print(handler.getCitationsWithinDate(2020, 2021))
-
-
+    df_citations_within_timespans = handler.getCitationsWithinTimespan("-99Y", "0")
+    print(df_citations_within_timespans.dtypes)
+    print(df_citations_within_timespans)
     

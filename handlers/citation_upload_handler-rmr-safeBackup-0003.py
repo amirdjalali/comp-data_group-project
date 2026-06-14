@@ -1,4 +1,4 @@
-from .upload_handler import UploadHandler
+from upload_handler import UploadHandler
 from rdflib import Graph, Namespace, Literal, URIRef, RDF, XSD
 from pandas import read_csv, Series
 from rdflib.plugins.stores.sparqlstore import SPARQLUpdateStore
@@ -18,18 +18,18 @@ class CitationUploadHandler(UploadHandler):
 
         oci_base_url = "https://w3id.org/oc/index/ci/"
 
-        citations = read_csv(path,
-                            keep_default_na=False,
-                            dtype={
-                                "oci": "string",
-                                "citing": "string",
-                                "cited": "string",
-                                "creation": "string",
-                                "timespan": "string",
-                                "journal_sc": "string",
-                                "author_sc": "string"
-                            })
-    
+        citations = read_csv("data/dh_citations.csv",
+                             keep_default_na=False,
+                             dtype={
+                                 "oci": "string",
+                                 "citing": "string",
+                                 "cited": "string",
+                                 "creation": "string",
+                                 "timespan": "string",
+                                 "journal_sc": "string",
+                                 "author_sc": "string"
+                             })
+        
         citation_oci_urls = {} # i think this is redundant?
         number_of_citations = len(citations)
         
@@ -47,9 +47,16 @@ class CitationUploadHandler(UploadHandler):
             # To parse the dates correctly, i have used the parse_dates static method below.
             citation_graph.add((citation_url, CITO.hasCitationCreationDate, self.parse_dates(row["creation"])))
 
-
-            citation_graph.add((citation_url, CITO.hasCitationTimeSpan, Literal(row["timespan"], datatype=XSD.string)))
-
+            # The try-except loop allowed to trace in which records errors happened when using XSD.timespan.
+            # I got errors with negative timespans. Actually XSD supports negative timespans, but apparently it's an rdflib limitation.
+            # Now we parse timespans as strings, so the try-except loop is redundant.
+            # We can try and parse the timespans when creating the dataframes in citation_query_handler.py.
+            try:
+                if row["timespan"]:
+                    citation_graph.add((citation_url, CITO.hasCitationTimeSpan, Literal(row["timespan"], datatype=XSD.string)))
+            except Exception as e:
+                print(f"Error on row {row}")
+                raise
 
             # Parse self citations 
 
@@ -106,6 +113,6 @@ class CitationUploadHandler(UploadHandler):
 if __name__ == "__main__":
 
     # You need to create a handler object first, and then call the method upon it
-    handler = CitationUploadHandler("data/dh_citations.csv")
+    handler = CitationUploadHandler()
     handler.setDbPathOrUrl("http://localhost:9999/blazegraph/sparql")
-    handler.pushDataToDb()
+    handler.pushDataToDb("")
