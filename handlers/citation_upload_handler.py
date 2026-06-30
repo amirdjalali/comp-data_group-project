@@ -1,4 +1,4 @@
-from upload_handler import UploadHandler
+from handlers.upload_handler import UploadHandler
 from rdflib import Graph, Namespace, Literal, URIRef, RDF, XSD
 from pandas import read_csv, Series
 from rdflib.plugins.stores.sparqlstore import SPARQLUpdateStore
