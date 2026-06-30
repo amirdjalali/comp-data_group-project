@@ -1,5 +1,6 @@
 class IdentifiableEntity:
     def __init__(self, identifiers: list[str]) -> None:
+        # Save identifiers into a set to remove duplicates
         self.id = set()
         for identifier in identifiers:
             self.id.add(identifier)
