@@ -14,7 +14,7 @@ class Handler:
         Sets a new path or URL for the database.
     """
 
-    def __init__(self) -> str:
+    def __init__(self) -> None:
         self.dbPathOrUrl: str = ""
 
     def getDbPathOrUrl(self) -> str:
