@@ -1,4 +1,4 @@
-from query_handler import QueryHandler
+from .query_handler import QueryHandler
 import pandas as pd
 from sparql_dataframe import get
 import re
@@ -7,40 +7,37 @@ from pandas import read_csv, Series
 
 class CitationQueryHandler(QueryHandler):
 
-    #MISTAKE: getById is for the general queryHandler
-
-    # def getById(self, id: str) -> pd.DataFrame:
-        
-    #     endpoint = self.getDbPathOrUrl()
-
+    def getById(self, id: str) -> pd.DataFrame:
     
-    #     oci = id
-    #     if "https://w3id.org/oc/index/ci/" not in oci:
-    #         oci = "https://w3id.org/oc/index/ci/" + id
-    #     #try to understand if we need to check whether the id needs to be checked or not from citation_upload_handler.py (maybe not, since the upload handler already checks that the OCIs are in the correct format, but maybe we can add this check just to be sure)
-        
-    #     query = f"""
-    #             PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-    #             PREFIX cito: <http://purl.org/spar/cito/>
-                
-    #             SELECT ?oci ?citing ?cited ?creation ?timespan ?journal_sc ?author_sc
-    #             WHERE {{
-                
-    #                 BIND(<{oci}> AS ?oci)
+        endpoint = self.getDbPathOrUrl()
 
-    #                 ?oci a cito:Citation .
-    #                 ?oci cito:hasCitingEntity ?citing .
-    #                 ?oci cito:hasCitedEntity ?cited .
-    #                 ?oci cito:hasCitationCreationDate ?creation .
-    #                 ?oci cito:hasCitationTimeSpan ?timespan .
+        oci = id
+        if "https://w3id.org/oc/index/ci/" not in oci:
+            oci = "https://w3id.org/oc/index/ci/" + id
+        #try to understand if we need to check whether the id needs to be checked or not from citation_upload_handler.py (maybe not, since the upload handler already checks that the OCIs are in the correct format, but maybe we can add this check just to be sure)
+    
+        query = f"""
+                PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                PREFIX cito: <http://purl.org/spar/cito/>
+            
+                SELECT ?oci ?citing ?cited ?creation ?timespan ?journal_sc ?author_sc
+                WHERE {{
+            
+                    BIND(<{oci}> AS ?oci)
 
-    #                 BIND(IF(EXISTS {{ ?oci a cito:JournalSelfCitation }}, "True", "False") AS ?journal_sc)
-    #                 BIND(IF(EXISTS {{ ?oci a cito:AuthorSelfCitation }}, "True", "False") AS ?author_sc)
-    #             }}
-    #         """
-        
-    #     df_sparql = get(endpoint, query, True)
-    #     return df_sparql
+                    ?oci a cito:Citation .
+                    ?oci cito:hasCitingEntity ?citing .
+                    ?oci cito:hasCitedEntity ?cited .
+                    ?oci cito:hasCitationCreationDate ?creation .
+                    ?oci cito:hasCitationTimeSpan ?timespan .
+
+                    BIND(IF(EXISTS {{ ?oci a cito:JournalSelfCitation }}, "True", "False") AS ?journal_sc)
+                    BIND(IF(EXISTS {{ ?oci a cito:AuthorSelfCitation }}, "True", "False") AS ?author_sc)
+                }}
+            """
+    
+        df_sparql = get(endpoint, query, True)
+        return df_sparql
 
     def getAllCitations(self) -> pd.DataFrame:
 
