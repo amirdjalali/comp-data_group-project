@@ -50,20 +50,76 @@ class BasicQueryEngine:
         return []
     
     def getAllBibliographicEntities(self) -> list[BibliographicEntity]:
-        # placeholder for looping through bibliographicEntityQuery handler, merge Dataframes, convert into list of Bibliographic Entity objects
-        return []
+        result = []
+        for bib_qh in self.bibliographicEntityQuery:
+            df = bib_qh.getAllBibliographicEntities() # calls query handler's getAllBibiliographicEntities method
+            for i, row in df.iterrows(): # loops through every row
+                result.append(BibliographicEntity( # adds an object for each row that contains the list of IDs, list of authors, the title, pub date, and venue of each row
+                    identifiers=str(row["id"]).split(";"),
+                    author=str(row["author"]).split(";"),
+                    title=row["title"],
+                    publication_date=row["publication_date"],
+                    venue=row["venue"],
+                ))
+        return result
+     
     
     def getBibliographicEntitiesWithTitle(self, title: str) -> list[BibliographicEntity]:
-        return []
+        result = []
+        for bib_qh in self.bibliographicEntityQuery:
+            df = bib_qh.getAllBibliographicEntitiesWithTitle(title) # calls query handler's getAllBibiliographicEntities method
+            for i, row in df.iterrows(): # loops through every row
+                result.append(BibliographicEntity( # adds an object for each row that contains the list of IDs, list of authors, the title, pub date, and venue of each row
+                    identifiers=str(row["id"]).split(";"),
+                    author=str(row["author"]).split(";"),
+                    title=row["title"],
+                    publication_date=row["publication_date"],
+                    venue=row["venue"],
+                ))
+        return result
+
     
     def getBibliographicEntitiesWithAuthor(self, author: str) -> list[BibliographicEntity]:
-        return []
+        result = []
+        for bib_qh in self.bibliographicEntityQuery:
+            df = bib_qh.getAllBibliographicEntitiesWithAuthor(author) # calls query handler's getAllBibiliographicEntities method
+            for i, row in df.iterrows(): # loops through every row
+                result.append(BibliographicEntity( # adds an object for each row that contains the list of IDs, list of authors, the title, pub date, and venue of each row
+                    identifiers=str(row["id"]).split(";"),
+                    author=str(row["author"]).split(";"),
+                    title=row["title"],
+                    publication_date=row["publication_date"],
+                    venue=row["venue"],
+                ))
+        return result
     
     def getBibliographicEntitiesWithinDate(self, start_date: str, end_date: str) -> list[BibliographicEntity]:
-        return []
+        result = []
+        for bib_qh in self.bibliographicEntityQuery:
+            df = bib_qh.getAllBibliographicEntitiesWithinDate(start_date, end_date) # calls query handler's getAllBibiliographicEntities method
+            for i, row in df.iterrows(): # loops through every row
+                result.append(BibliographicEntity( # adds an object for each row that contains the list of IDs, list of authors, the title, pub date, and venue of each row
+                    identifiers=str(row["id"]).split(";"),
+                    author=str(row["author"]).split(";"),
+                    title=row["title"],
+                    publication_date=row["publication_date"],
+                    venue=row["venue"],
+                ))
+        return result
     
     def getBibliographicEntitiesWithVenue(self, venue: str) -> list[BibliographicEntity]:
-        return []
+        result = []
+        for bib_qh in self.bibliographicEntityQuery:
+            df = bib_qh.getAllBibliographicEntitiesWithVenue(venue) # calls query handler's getAllBibiliographicEntities method
+            for i, row in df.iterrows(): # loops through every row
+                result.append(BibliographicEntity( # adds an object for each row that contains the list of IDs, list of authors, the title, pub date, and venue of each row
+                    identifiers=str(row["id"]).split(";"),
+                    author=str(row["author"]).split(";"),
+                    title=row["title"],
+                    publication_date=row["publication_date"],
+                    venue=row["venue"],
+                ))
+        return result
 
 
 
