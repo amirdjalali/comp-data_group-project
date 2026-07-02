@@ -4,7 +4,7 @@ from .query_handler import QueryHandler
 
 class BibliographicEntityQueryHandler(QueryHandler):
 
-    def _buildQuery(self, where_clause="", params=None): # where_clause and params are optional -> default to "" and None
+    def _buildQuery(self, where_clause="", params=None): # private method; where_clause and params are optional -> default to "" and None
         # This is the core SELECT used by every method below.
         # For each entity, it fetches the four core fields (internalId,
         # title, publication_date, venue) plus two extra columns:
@@ -90,7 +90,7 @@ class BibliographicEntityQueryHandler(QueryHandler):
         )
 
     # --- Filtering by DATE RANGE
-    @staticmethod
+    @staticmethod # function operates independently 
     def _normaliseDate(date_string: str, is_end_date: bool = False) -> str:
         # Converts a partial date string to a full YYYY-MM-DD so that SQLite
         # string comparisons work correctly across mixed formats.
