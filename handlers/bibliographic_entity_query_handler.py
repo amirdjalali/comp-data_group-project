@@ -4,90 +4,181 @@ from .query_handler import QueryHandler
 
 class BibliographicEntityQueryHandler(QueryHandler):
 
-    def getAllBibliographicEntities(self) -> pd.DataFrame: # creates a dataframe out of all the core metadata -> has no filters; this line defines the method, only self as input argument; output will be a pandas dataframe
-        query = """  
-            SELECT internalId, title, publication_date, venue 
+    def _buildQuery(self, where_clause="", params=None): # private method; where_clause and params are optional -> default to "" and None
+        # This is the core SELECT used by every method below.
+        # For each entity, it fetches the four core fields (internalId,
+        # title, publication_date, venue) plus two extra columns:
+        # - authors: all author names joined into one string, e.g. "Smith, A; Jones, B"
+        # - ids: all identifiers joined into one string, e.g. "doi:10.1/x; omid:br/1"
+        #
+        # The two inner SELECTs (one for authors, one for ids) are called
+        # "correlated subqueries". They run once per entity row and look up
+        # only the rows that belong to that entity (WHERE entityId = ...).
+        # We use this instead of a JOIN because joining both the author table
+        # AND the id table at once would create duplicate rows.
+        #
+        # GROUP_CONCAT joins multiple values into one string with "; " as the
+        # separator. We avoid plain commas because author names already
+        # contain commas (e.g. "Smith, Alice").
+
+        query = """
+            SELECT
+                BibliographicEntity.internalId,
+                BibliographicEntity.title,
+                BibliographicEntity.publication_date,
+                BibliographicEntity.venue,
+                (
+                    SELECT GROUP_CONCAT(author, '; ')
+                    FROM BibliographicEntityAuthor
+                    WHERE entityId = BibliographicEntity.internalId
+                ) AS authors,
+                (
+                    SELECT GROUP_CONCAT(id, '; ')
+                    FROM BibliographicEntityId
+                    WHERE entityID = BibliographicEntity.internalId
+                ) AS ids
             FROM BibliographicEntity
-        """ # stores multi-line SQL statement inside a text variable, query. commands the database to check the main metadata table BibliographicEntity and fetches every single record, using the four required columns. 
-        with sqlite3.connect(self.dbPathOrUrl) as con: # opens pipe connection (con) to the local SQLite database file path -> placeholder will update automatically depending on the test file 
-            return pd.read_sql_query(query, con) # pandas takes the query text and the database pipe con, collects the resulting rows using SQLite, converting them to a clean, labelled dataframe table 
+        """
 
-# -- filtering by title substring
+# The parentheses (...) wrap a second, smaller SELECT query living inside the main one. This is a subquery — 
+# a query inside a query. It runs once per row of the outer query, meaning once per publication.
 
+# This means:
+
+# FROM BibliographicEntityAuthor — go to the author table (which has one row per author per publication, so a 
+# publication with 3 authors has 3 rows there)
+
+# WHERE entityId = BibliographicEntity.internalId — only look at rows belonging to the publication currently 
+# being processed by the outer query. This is what makes it "correlated" — the inner query is linked to (=) 
+# the outer query's current row
+
+# GROUP_CONCAT(author, '; ') — take all the author values found and concatenate them into a single string, 
+# separated by '; '. So three authors become "Cohen, Jeffrey; Lemenager, Stephanie; Smith, Alice"
+
+# AS authors — give this result column the name authors in the final output table
+
+        if where_clause:
+            query += " WHERE " + where_clause
+# if where_clause: checks whether where_clause is non-empty: an empty string "" is treated as False in Python, 
+# so this block only runs if an actual filter was passed in. query += means "add this to the end of the query 
+# string that already exists."
+
+        with sqlite3.connect(self.dbPathOrUrl) as con:
+            return pd.read_sql_query(query, con, params=params or [])
+        # params or [] means "use params if it has values, otherwise use an empty list" — this handles the case where 
+        # params was left as None.
+
+    # --- NO FILTER
+    # Returns every entity with no filter applied
+    def getAllBibliographicEntities(self) -> pd.DataFrame:
+        return self._buildQuery()
+
+    # --- Filtering by TITLE
+    # Returns entities whose title contains the given substring
     def getBibliographicEntitiesWithTitle(self, title: str) -> pd.DataFrame:
-        query = """
-            SELECT internalId, title, publication_date, venue
-            FROM BibliographicEntity
-            WHERE title LIKE ?
-        """
-        with sqlite3.connect(self.dbPathOrUrl) as con:
-            return pd.read_sql_query(query, con, params=[f"%{title}%"]) # title is wrapped with front and back wildcards -> ensures partial matches 
+        return self._buildQuery(
+            "BibliographicEntity.title LIKE ?",
+            [f"%{title}%"]
+        )
 
-# -- filtering by venue substring 
-
+    # --- Filtering by VENUE
+    # Returns entities whose venue contains the given substring
     def getBibliographicEntitiesWithVenue(self, venue: str) -> pd.DataFrame:
-        query = """
-            SELECT internalId, title, publication_date, venue
-            FROM BibliographicEntity
-            WHERE venue LIKE ?
-        """
-        with sqlite3.connect(self.dbPathOrUrl) as con:
-            return pd.read_sql_query(query, con, params=[f"%{venue}%"])
+        return self._buildQuery(
+            "BibliographicEntity.venue LIKE ?",
+            [f"%{venue}%"]
+        )
 
-# -- filtering by dynamic date range
+    # --- Filtering by DATE RANGE
+    @staticmethod # function operates independently 
+    def _normaliseDate(date_string: str, is_end_date: bool = False) -> str:
+        # Converts a partial date string to a full YYYY-MM-DD so that SQLite
+        # string comparisons work correctly across mixed formats.
+        # For start dates, missing parts pad to the earliest possible day.
+        # For end dates, missing parts pad to the latest possible day -
+        # so that searching "2014" to "2014" catches everything in that year,
+        # not just publications stored as exactly "2014-01-01".
+        if not date_string:
+            return None
 
-    def getBibliographicEntitiesWithinPublicationDate(self, start_date: str = None, end_date: str = None) -> pd.DataFrame: # assigning None will make them optional, in case one of the boundaries is left empty?
-        query = """
-            SELECT internalId, title, publication_date, venue
-            FROM BibliographicEntity
-            WHERE 1=1
-        """ # 1=1 is a trick to build dynamic queries without knowing what a user's filter will look like. -> placeholder that is always true
-        
-        # creates an empty list to collect the date values in the exact order the placeholders appear
-        date_list = []
+        parts = date_string.split("-")
 
-        # checks if a starting date limit was provided by the test file
-        if start_date: # might appear in the test file
-            query += " AND publication_date >= ?" # optional filters -> query is updated to include the start date
-            date_list.append(start_date)
+        if len(parts) == 1:     # e.g. "2016"
+            return f"{date_string}-12-31" if is_end_date else f"{date_string}-01-01"
+        elif len(parts) == 2:   # e.g. "2016-03"
+            return f"{date_string}-28" if is_end_date else f"{date_string}-01"
+        else:                   # e.g. "2016-03-15" -> already full
+            return date_string
 
-        # checks if a end date limit was provided by the test file
-        if end_date: # might appear in the test file
-            query += " AND publication_date <= ?" # optional filters -> query is updated to also include the end date 
-            date_list.append(end_date)
+    # Returns entities published within an optional date range.
+    # Both start_date and end_date are optional - you can pass just one.
+    # Dates are normalised to YYYY-MM-DD before comparison so that partial
+    # formats like "2016" or "2016-03" are handled correctly.
+    # If you want a list of every work published in a specific year (e.g., 2024), you need 
+    # to input the year twice, so that it becomes the range 2024-01-01 to 2024-12-31
+    def getBibliographicEntitiesWithinPublicationDate(self, start_date: str = None, end_date: str = None) -> pd.DataFrame:
+        conditions = []
+        params = []
 
-        with sqlite3.connect(self.dbPathOrUrl) as con:
-            return pd.read_sql_query(query, con, params=date_list)
+        if start_date:
+            conditions.append("BibliographicEntity.publication_date >= ?")
+            params.append(self._normaliseDate(start_date, is_end_date=False))
 
-# -- filter by entities with author
+        if end_date:
+            conditions.append("BibliographicEntity.publication_date <= ?")
+            params.append(self._normaliseDate(end_date, is_end_date=True))
 
+        # If neither date was given, return everything
+        where = " AND ".join(conditions) if conditions else ""
+        return self._buildQuery(where, params)
+
+    # --- Filtering by AUTHOR
+    # Returns entities that have the given author (partial match).
+    
+    # The WHERE uses a subquery to find matching internalIds from the raw
+    # author table first. This way, the outer query's GROUP_CONCAT still
+    # collects ALL authors for the matched entity, not only the one that
+    # matched the filter.
+    # The ? is a placeholder, and the actual value gets passed separately in the params list.
+    # This is called a parameterised query. 
     def getBibliographicEntitiesWithAuthor(self, author: str) -> pd.DataFrame:
-        # SELECT DISTINCT ensure a publication appears only once in the final table
-        # even if an entity matches multiple criteria during the filtering process
-        # JOIN temporarily matches main entities table with author table
-        query = """
-            SELECT DISTINCT BibliographicEntity.internalId, BibliographicEntity.title, BibliographicEntity.publication_date, BibliographicEntity.venue 
-            FROM BibliographicEntity
-            JOIN BibliographicEntityAuthor ON BibliographicEntity.internalId = BibliographicEntityAuthor.entityId
-            WHERE BibliographicEntityAuthor.author LIKE ?
-        """
-        # opens a temporary, secure connection bridge to the underlying SQLite database file
-        with sqlite3.connect(self.dbPathOrUrl) as con:
-            # percent wildcards ensure partial matches
-            return pd.read_sql_query(query, con, params=[f"%{author}%"])
+        return self._buildQuery(
+            """BibliographicEntity.internalId IN (
+                SELECT entityId
+                FROM BibliographicEntityAuthor
+                WHERE author LIKE ?
+            )""",
+            [f"%{author}%"]
+        )
 
-# -- filter by id 
+    # IN (...) means "only include rows where this value appears in the following list." The list 
+    # here isn't written out by hand — it's produced by another SELECT query running inside the brackets. 
+    # That inner query is called a subquery.
 
+    # This means: "give me all entities whose internalId appears in the list of entityIds 
+    # from the author table where the author name matches my search." The reason for doing it this way 
+    # (rather than a JOIN): if you JOIN the author table and then also JOIN the 
+    # id table, you get a multiplication of rows. The subquery avoids that by just using the author table to 
+    # produce a list of matching ids, then filtering the main query by that list — the main query's own inner 
+    # SELECTs then collect all authors and ids cleanly.
+
+    # --- Filtering by ID
+    # Returns the entity with this exact id (e.g. "doi:10.1002/pra2.714").
+    # Uses exact equality (=) not LIKE, because ids must match precisely.
+    # Same subquery pattern as above so ALL ids/authors for the entity
+    # are still returned, not just the one that matched.
     def getById(self, id: str) -> pd.DataFrame:
-        # JOIN to temporarily match main entities table with identifier table
-        # strict equals sign (=) instead of LIKE because unique identifier lookups must be exact
-        # SELECT line only requests four core columns, dropping the ID string itself
-        query = """
-            SELECT BibliographicEntity.internalId, BibliographicEntity.title, BibliographicEntity.publication_date, BibliographicEntity.venue 
-            FROM BibliographicEntity
-            JOIN BibliographicEntityId ON BibliographicEntity.internalId = BibliographicEntityId.entityID
-            WHERE BibliographicEntityId.id = ?
-        """
-
-        with sqlite3.connect(self.dbPathOrUrl) as con:
-            return pd.read_sql_query(query, con, params=[id])
+        return self._buildQuery(
+            """BibliographicEntity.internalId IN (
+                SELECT entityID
+                FROM BibliographicEntityId
+                WHERE id = ?
+            )""",
+            [id]
+        )
+    
+    # WHERE internalId IN ("e1", "e2") is a shorter way of saying WHERE internalId = "e1" OR internalId = "e2"
+    # But you can't write it that way here because you don't know in advance how many results the inner query will 
+    # return — it depends on what the user searches for. IN handles whatever size list comes back automatically, 
+    # whether that's 1 result, 20 results, or 0 results.
+    # So in one sentence: = is for one value, IN is for a list of values.
