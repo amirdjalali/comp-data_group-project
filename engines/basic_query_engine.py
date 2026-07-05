@@ -77,7 +77,7 @@ class BasicQueryEngine:
             citation = AuthorSelfCitation(ids, row["creation"], row["timespan"], row["citing"], row["cited"])
             citations.append(citation)
         
-        print(citations)
+        print(len(citations))
         return citations
     
     def getAllJournalSelfCitations(self) -> list[JournalSelfCitation]:
@@ -161,8 +161,8 @@ if __name__ == "__main__":
     que = BasicQueryEngine()
     que.addCitationHandler(cit_qh)
     # que.getAllCitations()
-    que.getAllAuthorSelfCitations()
-    # que.getAllJournalSelfCitations()
+    #que.getAllAuthorSelfCitations()
+    que.getAllJournalSelfCitations()
     # que.getCitationsWithinTimespan()
     # que.getCitationsWithinDate()
 
