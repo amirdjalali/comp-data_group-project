@@ -20,5 +20,6 @@ class Handler:
     def getDbPathOrUrl(self) -> str:
         return self.dbPathOrUrl
     
-    def setDbPathOrUrl(self, pathOrUrl: str) -> None:
+    def setDbPathOrUrl(self, pathOrUrl: str) -> bool:
         self.dbPathOrUrl = pathOrUrl
+        return True
