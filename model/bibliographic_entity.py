@@ -1,4 +1,4 @@
-from identifiable_entity import IdentifiableEntity
+from model.identifiable_entity import IdentifiableEntity
 
 class BibliographicEntity(IdentifiableEntity):
     def __init__(self, identifiers: list[str], author: list[str], title: str = None, publication_date: str = None, venue: str = None) -> None:
