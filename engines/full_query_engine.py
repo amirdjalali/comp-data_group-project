@@ -20,6 +20,7 @@ class FullQueryEngine(BasicQueryEngine):
 
         #loop through the bibliographic entities associated with the author and add their IDs to the dictionary with the corresponding BibliographicEntity object as the value
         for author_entity in author_bib_entities:
+            print(author_entity)
             for id in author_entity.getIds():
                 #if id[:4] == "omid": -> inutile, li aggiungo già tutti e verifico dopo se l'omid che mi interessa è presente tra le chiavi del dizionario
                 entities_dict[id] = author_entity
