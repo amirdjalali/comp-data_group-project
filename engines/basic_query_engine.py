@@ -44,7 +44,6 @@ class BasicQueryEngine:
                 )
             return None
 
-
  
     def getAllCitations(self) -> list[Citation]:
         # placeholder for looping through citationQuery handler, merge Dataframes, convert into list of Citation objects
@@ -165,7 +164,7 @@ class BasicQueryEngine:
     def getBibliographicEntitiesWithTitle(self, title: str) -> list[BibliographicEntity]:
         result = []
         for bib_qh in self.bibliographicEntityQuery:
-            df = bib_qh.getBibliographicEntitiesWithTitle(title) # calls query handler's getAllBibiliographicEntities method
+            df = bib_qh.getBibliographicEntitiesWithTitle(title) # calls query handler's getAllBibiliographicEntitiesWithTitle method
             for i, row in df.iterrows(): # loops through every row
                 result.append(BibliographicEntity( # adds an object for each row that contains the list of IDs, list of authors, the title, pub date, and venue of each row
                     identifiers=row["ids"].split("; ") if pd.notna(row["ids"]) else [],
@@ -180,7 +179,7 @@ class BasicQueryEngine:
     def getBibliographicEntitiesWithAuthor(self, author: str) -> list[BibliographicEntity]:
         result = []
         for bib_qh in self.bibliographicEntityQuery:
-            df = bib_qh.getBibliographicEntitiesWithAuthor(author) # calls query handler's getAllBibiliographicEntities method
+            df = bib_qh.getBibliographicEntitiesWithAuthor(author) # calls query handler's getAllBibiliographicEntitiesWithAuthor method
             for i, row in df.iterrows(): # loops through every row
                 result.append(BibliographicEntity( # adds an object for each row that contains the list of IDs, list of authors, the title, pub date, and venue of each row
                     identifiers=row["ids"].split("; ") if pd.notna(row["ids"]) else [],
@@ -194,7 +193,7 @@ class BasicQueryEngine:
     def getBibliographicEntitiesWithinPublicationDate(self, start_date: str, end_date: str) -> list[BibliographicEntity]:
         result = []
         for bib_qh in self.bibliographicEntityQuery:
-            df = bib_qh.getBibliographicEntitiesWithinPublicationDate(start_date, end_date) # calls query handler's getAllBibiliographicEntities method
+            df = bib_qh.getBibliographicEntitiesWithinPublicationDate(start_date, end_date) # calls query handler's getAllBibiliographicEntitiesWithinPublicationDate method
             for i, row in df.iterrows(): # loops through every row
                 result.append(BibliographicEntity( # adds an object for each row that contains the list of IDs, list of authors, the title, pub date, and venue of each row
                     identifiers=row["ids"].split("; ") if pd.notna(row["ids"]) else [],
@@ -208,7 +207,7 @@ class BasicQueryEngine:
     def getBibliographicEntitiesWithVenue(self, venue: str) -> list[BibliographicEntity]:
         result = []
         for bib_qh in self.bibliographicEntityQuery:
-            df = bib_qh.getBibliographicEntitiesWithVenue(venue) # calls query handler's getAllBibiliographicEntities method
+            df = bib_qh.getBibliographicEntitiesWithVenue(venue) # calls query handler's getAllBibiliographicEntitiesWithVenue method
             for i, row in df.iterrows(): # loops through every row
                 result.append(BibliographicEntity( # adds an object for each row that contains the list of IDs, list of authors, the title, pub date, and venue of each row
                     identifiers=row["ids"].split("; ") if pd.notna(row["ids"]) else [],
