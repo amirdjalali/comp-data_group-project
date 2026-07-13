@@ -1,4 +1,4 @@
-from upload_handler import UploadHandler
+from .upload_handler import UploadHandler
 from rdflib import Graph, Namespace, Literal, URIRef, RDF, XSD
 from pandas import read_csv, Series
 from rdflib.plugins.stores.sparqlstore import SPARQLUpdateStore
@@ -32,6 +32,7 @@ class CitationUploadHandler(UploadHandler):
     
         citation_oci_urls = {} # i think this is redundant?
         number_of_citations = len(citations)
+        print(f"Starting to parse citations from {path}")
         
         for idx, row in citations.iterrows():
             print(f"Adding row {idx} of {number_of_citations}", end="\r")
@@ -59,10 +60,13 @@ class CitationUploadHandler(UploadHandler):
                 citation_graph.add((citation_url, RDF.type, CITO.AuthorSelfCitation))
 
         print(f"Done! Parsed {number_of_citations} citations")
+        
 
         store = SPARQLUpdateStore()
         endpoint = self.getDbPathOrUrl()
         store.open((endpoint, endpoint))
+
+        print(f"Starting to stor citations to {endpoint}")
 
         # Use a counter for printing the status of the storing process
         i = 1 

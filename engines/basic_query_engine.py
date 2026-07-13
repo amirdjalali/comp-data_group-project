@@ -25,6 +25,9 @@ class BasicQueryEngine:
         self.citationQuery.append(handler)
         # duplicate check?
         return True
+
+    def getCitationHandlers(self) -> list:
+        return self.citationQuery
     
     def addBibliographicEntityHandler(self, handler: BibliographicEntityQueryHandler) -> bool:
         self.bibliographicEntityQuery.append(handler)
@@ -42,7 +45,11 @@ class BasicQueryEngine:
                     publication_date=row["publication_date"],  # pass publication date directly
                     venue=row["venue"],  # pass venue directly
                 )
-            return None
+        for cit_qh in self.citationQuery:
+            df = cit_qh.getById(id)
+            if not df.empty:
+                row = df.iloc[0]
+                return Citation(row["oci"], row["creation"], row["timespan"], row["citing"], row["cited"])
 
 
  
@@ -52,7 +59,7 @@ class BasicQueryEngine:
         df_citations = pd.DataFrame()
         for handler in handlers:
             df_citations =  pd.concat([df_citations, handler.getAllCitations()], ignore_index=True)
-        print(df_citations)
+        #print(df_citations)
 
         citations = []
 
@@ -67,7 +74,7 @@ class BasicQueryEngine:
                 if row["journal_sc"]:
                     citations.append(JournalSelfCitation(ids, row["creation"], row["timespan"], row["citing"], row["cited"]))            
         
-        print(len(citations))
+        #print(len(citations))
         return citations
 
     
