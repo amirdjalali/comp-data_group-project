@@ -34,6 +34,7 @@ class BasicQueryEngine:
         return True
     
     def getEntityById(self, id: str) -> IdentifiableEntity | None:
+        entity = None
         for bib_qh in self.bibliographicEntityQuery:  # loop through all bibliographic query handlers
             df = bib_qh.getById(id)  # ask the handler to search the relational database for this id
             #print(df)

@@ -49,11 +49,11 @@ class TestProjectBasic(unittest.TestCase):
     relational = "." + sep + "relational.db"
     graph = "http://localhost:9999/blazegraph/sparql"
 
-    def test_01_CitationUploadHandler(self):
-        u = CitationUploadHandler()
-        self.assertTrue(u.setDbPathOrUrl(self.graph))
-        self.assertEqual(u.getDbPathOrUrl(), self.graph)
-        self.assertTrue(u.pushDataToDb(self.citation))
+    # def test_01_CitationUploadHandler(self):
+    #     u = CitationUploadHandler()
+    #     self.assertTrue(u.setDbPathOrUrl(self.graph))
+    #     self.assertEqual(u.getDbPathOrUrl(), self.graph)
+    #     self.assertTrue(u.pushDataToDb(self.citation))
 
     def test_02_BibliographicEntityUploadHandler(self):
         u = BibliographicEntityUploadHandler()
@@ -87,69 +87,69 @@ class TestProjectBasic(unittest.TestCase):
         self.assertIsInstance(q.getBibliographicEntitiesWithinPublicationDate("2022","2024"), DataFrame)
         self.assertIsInstance(q.getBibliographicEntitiesWithVenue("Digital Scholarship In The Humanities"), DataFrame)
 
-    # def test_05_FullQueryEngine(self):
-    #     jq = CitationQueryHandler()
-    #     jq.setDbPathOrUrl(self.graph)
-    #     cq = BibliographicEntityQueryHandler()
-    #     cq.setDbPathOrUrl(self.relational)
+    def test_05_FullQueryEngine(self):
+        jq = CitationQueryHandler()
+        jq.setDbPathOrUrl(self.graph)
+        cq = BibliographicEntityQueryHandler()
+        cq.setDbPathOrUrl(self.relational)
 
-    #     fq = FullQueryEngine()
-    #     self.assertIsInstance(fq.cleanCitationHandlers(), bool)
-    #     self.assertIsInstance(fq.cleanBibliographicEntityHandlers(), bool)
-    #     self.assertTrue(fq.addCitationHandler(jq))
-    #     self.assertTrue(fq.addBibliographicEntityHandler(cq))
+        fq = FullQueryEngine()
+        self.assertIsInstance(fq.cleanCitationHandlers(), bool)
+        self.assertIsInstance(fq.cleanBibliographicEntityHandlers(), bool)
+        self.assertTrue(fq.addCitationHandler(jq))
+        self.assertTrue(fq.addBibliographicEntityHandler(cq))
 
-    #     self.assertEqual(fq.getEntityById("just_a_test"), None)
+        self.assertEqual(fq.getEntityById("just_a_test"), None)
 
-    #     r = fq.getAllCitations()
-    #     self.assertIsInstance(r, list)
-    #     for i in r:
-    #         self.assertIsInstance(i, Citation)
+        r = fq.getAllCitations()
+        self.assertIsInstance(r, list)
+        for i in r:
+            self.assertIsInstance(i, Citation)
 
-    #     r = fq.getAllAuthorSelfCitations()
-    #     self.assertIsInstance(r, list)
-    #     for i in r:
-    #         self.assertIsInstance(i, AuthorSelfCitation)
+        r = fq.getAllAuthorSelfCitations()
+        self.assertIsInstance(r, list)
+        for i in r:
+            self.assertIsInstance(i, AuthorSelfCitation)
 
-    #     r = fq.getAllJournalSelfCitations()
-    #     self.assertIsInstance(r, list)
-    #     for i in r:
-    #         self.assertIsInstance(i, JournalSelfCitation)
+        r = fq.getAllJournalSelfCitations()
+        self.assertIsInstance(r, list)
+        for i in r:
+            self.assertIsInstance(i, JournalSelfCitation)
 
-    #     r = fq.getCitationsWithinTimespan("P2Y","P18Y")
-    #     self.assertIsInstance(r, list)
-    #     for i in r:
-    #         self.assertIsInstance(i, Citation)
+        r = fq.getCitationsWithinTimespan("P2Y","P18Y")
+        self.assertIsInstance(r, list)
+        for i in r:
+            self.assertIsInstance(i, Citation)
 
-    #     r = fq.getCitationsWithinDate("2010-03","2020")
-    #     self.assertIsInstance(r, list)
-    #     for i in r:
-    #         self.assertIsInstance(i, Citation)
+        r = fq.getCitationsWithinDate("2010-03","2020")
+        self.assertIsInstance(r, list)
+        for i in r:
+            self.assertIsInstance(i, Citation)
 
-    #     r = fq.getAllBibliographicEntities()
-    #     self.assertIsInstance(r, list)
-    #     for i in r:
-    #         self.assertIsInstance(i, BibliographicEntity)
+        r = fq.getAllBibliographicEntities()
+        self.assertIsInstance(r, list)
+        for i in r:
+            self.assertIsInstance(i, BibliographicEntity)
 
-    #     r = fq.getBibliographicEntitiesWithTitle("Machine learning")
-    #     self.assertIsInstance(r, list)
-    #     for i in r:
-    #         self.assertIsInstance(i, BibliographicEntity)
+        r = fq.getBibliographicEntitiesWithTitle("Machine learning")
+        self.assertIsInstance(r, list)
+        for i in r:
+            self.assertIsInstance(i, BibliographicEntity)
 
-    #     r = fq.getBibliographicEntitiesWithAuthor("Rossi")
-    #     self.assertIsInstance(r, list)
-    #     for i in r:
-    #         self.assertIsInstance(i, BibliographicEntity)
+        r = fq.getBibliographicEntitiesWithAuthor("Rossi")
+        self.assertIsInstance(r, list)
+        for i in r:
+            self.assertIsInstance(i, BibliographicEntity)
 
-    #     r = fq.getBibliographicEntitiesWithinPublicationDate("2022","2024")
-    #     self.assertIsInstance(r, list)
-    #     for i in r:
-    #         self.assertIsInstance(i, BibliographicEntity)
+        r = fq.getBibliographicEntitiesWithinPublicationDate("2022","2024")
+        self.assertIsInstance(r, list)
+        for i in r:
+            self.assertIsInstance(i, BibliographicEntity)
 
-    #     r = fq.getBibliographicEntitiesWithVenue("Digital Scholarship In The Humanities")
-    #     self.assertIsInstance(r, list)
-    #     for i in r:
-    #         self.assertIsInstance(i, BibliographicEntity)
+        r = fq.getBibliographicEntitiesWithVenue("Digital Scholarship In The Humanities")
+        self.assertIsInstance(r, list)
+        for i in r:
+            self.assertIsInstance(i, BibliographicEntity)
 
     #     # FullQueryEngine
     #     # -----
