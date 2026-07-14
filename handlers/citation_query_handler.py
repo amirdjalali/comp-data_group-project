@@ -297,6 +297,7 @@ if __name__ == "__main__":
     
     handler = CitationQueryHandler()
     handler.setDbPathOrUrl("http://localhost:9999/blazegraph/sparql")
+    print(handler.getById("0603926682-06160449684"))
     
     # df_all_author_sc = handler.getAllAuthorSelfCitations()
     # print(df_all_author_sc.dtypes)
