@@ -37,7 +37,7 @@ class BasicQueryEngine:
         entity = None
         if is_citation is not False:
             for cit_qh in self.citationQuery:
-            df = cit_qh.getById(id)
+                df = cit_qh.getById(id)
                 if not df.empty:
                     row = df.iloc[0]
                     citing = self.getEntityById(row["citing"], False) 
@@ -77,8 +77,8 @@ class BasicQueryEngine:
         for idx, row in df_citations.iterrows():
             ids = []
             ids.append(row["oci"])
-            citing = self.getEntityById(row["citing"], True)
-            cited = self.getEntityById(row["cited"], True)
+            citing = self.getEntityById(row["citing"], False)
+            cited = self.getEntityById(row["cited"], False)
             if not row["author_sc"] and not row["journal_sc"]:
                 citations.append(Citation(ids, row["creation"], row["timespan"], citing, cited))
             else:
@@ -102,8 +102,8 @@ class BasicQueryEngine:
         for idx, row in df_citations.iterrows():
             ids = []
             ids.append(row["oci"])
-            citing = self.getEntityById(row["citing"], True)
-            cited = self.getEntityById(row["cited"], True)
+            citing = self.getEntityById(row["citing"], False)
+            cited = self.getEntityById(row["cited"], False)
             citation = AuthorSelfCitation(ids, row["creation"], row["timespan"], citing, cited)
             citations.append(citation)
         
@@ -121,8 +121,8 @@ class BasicQueryEngine:
         for idx, row in df_citations.iterrows():
             ids = []
             ids.append(row["oci"])
-            citing = self.getEntityById(row["citing"], True)
-            cited = self.getEntityById(row["cited"], True)
+            citing = self.getEntityById(row["citing"], False)
+            cited = self.getEntityById(row["cited"], False)
             citation = JournalSelfCitation(ids, row["creation"], row["timespan"], citing, cited)
             citations.append(citation)
         #print(len(citations))
@@ -139,8 +139,8 @@ class BasicQueryEngine:
         for idx, row in df_citations.iterrows():
             ids = []
             ids.append(row["oci"])
-            citing = self.getEntityById(row["citing"], True)
-            cited = self.getEntityById(row["cited"], True)
+            citing = self.getEntityById(row["citing"], False)
+            cited = self.getEntityById(row["cited"], False)
             if row["author_sc"]:
                 citation = AuthorSelfCitation(ids, row["creation"], row["timespan"], citing, cited)
             elif row["journal_sc"]:
@@ -162,8 +162,8 @@ class BasicQueryEngine:
         for idx, row in df_citations.iterrows():
             ids = []
             ids.append(row["oci"])
-            citing = self.getEntityById(row["citing"], True)
-            cited = self.getEntityById(row["cited"], True)
+            citing = self.getEntityById(row["citing"], False)
+            cited = self.getEntityById(row["cited"], False)
             if row["author_sc"]:
                 citation = AuthorSelfCitation(ids, row["creation"], row["timespan"], citing, cited)
             elif row["journal_sc"]:
