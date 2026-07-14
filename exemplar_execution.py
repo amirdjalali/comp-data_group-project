@@ -66,6 +66,6 @@ que.addCitationHandler(jou_qh)
 #result_q3 = que.getBibliographicEntitiesWithTitle("Neural networks")
 #print(result_q3)
 #result_q5 = que.getBibliographicEntitiesWithAuthor("James")
-result_q4 = que.getAuthorSelfCitationsByName("James")
-print(result_q4)
+# result_q4 = que.getAuthorSelfCitationsByName("James")
+# print(result_q4)
 # etc...

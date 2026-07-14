@@ -66,7 +66,7 @@ class CitationUploadHandler(UploadHandler):
         endpoint = self.getDbPathOrUrl()
         store.open((endpoint, endpoint))
 
-        print(f"Starting to stor citations to {endpoint}")
+        print(f"Starting to store citations to {endpoint}")
 
         # Use a counter for printing the status of the storing process
         i = 1 
