@@ -86,9 +86,6 @@ class BasicQueryEngine:
                 if row["journal_sc"]:
                     citations.append(JournalSelfCitation(ids, row["creation"], row["timespan"], citing, cited))            
         
-        for citation in citations:
-            print(citation.id)
-            print(citation.getCitingEntity())
         return citations
 
     
@@ -97,7 +94,7 @@ class BasicQueryEngine:
         df_citations = pd.DataFrame()
         for handler in handlers:
             df_citations =  pd.concat([df_citations, handler.getAllAuthorSelfCitations()], ignore_index=True)
-        print(df_citations)
+        #print(df_citations)
 
         citations = []
 
@@ -109,7 +106,7 @@ class BasicQueryEngine:
             citation = AuthorSelfCitation(ids, row["creation"], row["timespan"], citing, cited)
             citations.append(citation)
         
-        print(len(citations))
+        #print(len(citations))
         return citations
     
     def getAllJournalSelfCitations(self) -> list[JournalSelfCitation]:
@@ -117,7 +114,7 @@ class BasicQueryEngine:
         df_citations = pd.DataFrame()
         for handler in handlers:
             df_citations =  pd.concat([df_citations, handler.getAllJournalSelfCitations()], ignore_index=True)
-        print(df_citations)
+        #print(df_citations)
         citations = []
 
         for idx, row in df_citations.iterrows():
@@ -127,7 +124,7 @@ class BasicQueryEngine:
             cited = self.getEntityById(row["cited"], True)
             citation = JournalSelfCitation(ids, row["creation"], row["timespan"], citing, cited)
             citations.append(citation)
-        print(len(citations))
+        #print(len(citations))
         return citations
     
     def getCitationsWithinTimespan(self, min_timespan: str = None, max_timespan: str = None) -> list[Citation]:
@@ -135,7 +132,7 @@ class BasicQueryEngine:
         df_citations = pd.DataFrame()
         for handler in handlers:
             df_citations =  pd.concat([df_citations, handler.getCitationsWithinTimespan(min_timespan, max_timespan)], ignore_index=True)
-        print(df_citations)
+        #print(df_citations)
         citations = []
 
         for idx, row in df_citations.iterrows():
@@ -150,7 +147,7 @@ class BasicQueryEngine:
             else:
                 citation = Citation(ids, row["creation"], row["timespan"], citing, cited)
             citations.append(citation)
-        print(len(citations))
+        #print(len(citations))
         return citations
 
     def getCitationsWithinDate(self, start_date: str = None, end_date: str = None) -> list[Citation]:
@@ -158,7 +155,7 @@ class BasicQueryEngine:
         df_citations = pd.DataFrame()
         for handler in handlers:
             df_citations =  pd.concat([df_citations, handler.getCitationsWithinDate(start_date, end_date)], ignore_index=True)
-        print(df_citations)
+        #print(df_citations)
         citations = []
 
         for idx, row in df_citations.iterrows():
@@ -173,7 +170,7 @@ class BasicQueryEngine:
             else:
                 citation = Citation(ids, row["creation"], row["timespan"], citing, cited)
             citations.append(citation)
-        print(len(citations))
+        #print(len(citations))
         return citations
     
     def getAllBibliographicEntities(self) -> list[BibliographicEntity]:
