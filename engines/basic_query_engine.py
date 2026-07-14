@@ -38,13 +38,13 @@ class BasicQueryEngine:
         if is_citation is not False:
             for cit_qh in self.citationQuery:
             df = cit_qh.getById(id)
-            if not df.empty:
-                row = df.iloc[0]
-                citing = self.getEntityById(row["citing"], False) 
-                cited = self.getEntityById(row["cited"], False)
-                ids = []
-                ids.append(row["oci"])
-                entity = Citation(ids, row["creation"], row["timespan"], citing, cited)
+                if not df.empty:
+                    row = df.iloc[0]
+                    citing = self.getEntityById(row["citing"], False) 
+                    cited = self.getEntityById(row["cited"], False)
+                    ids = []
+                    ids.append(row["oci"])
+                    entity = Citation(ids, row["creation"], row["timespan"], citing, cited)
 
         if entity is None:    
             for bib_qh in self.bibliographicEntityQuery:  # loop through all bibliographic query handlers
