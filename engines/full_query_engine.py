@@ -1,5 +1,3 @@
-from model import citation
-
 from .basic_query_engine import BasicQueryEngine
 from model.author_self_citation import AuthorSelfCitation
 from model.journal_self_citation import JournalSelfCitation
@@ -21,8 +19,11 @@ class FullQueryEngine(BasicQueryEngine):
         #creating a dictionary to map the IDs to their respective full bibliographic entities
         entities_dict = dict()
 
+        print(f"Author bibliographic entities: {author_bib_entities}")
+
         #loop through the bibliographic entities associated with the author and add their IDs to the dictionary with the corresponding BibliographicEntity object as the value
         for author_entity in author_bib_entities:
+            
             for id in author_entity.getIds():
                 #if id[:4] == "omid": -> inutile, li aggiungo già tutti e verifico dopo se l'omid che mi interessa è presente tra le chiavi del dizionario
                 entities_dict[id] = author_entity
@@ -35,6 +36,8 @@ class FullQueryEngine(BasicQueryEngine):
         for citation in all_author_self_citations:
             citing_entity = citation.getCitingEntity()
             cited_entity = citation.getCitedEntity()
+
+            print(f"questa è una citing entity:{citing_entity}/n questo è il suo tipo: {type(citing_entity)}")
 
             #Initializing variables to store the enriched citing and cited entities
             enriched_citing = None
@@ -58,7 +61,7 @@ class FullQueryEngine(BasicQueryEngine):
 
         return author_self_citations
     
-    
+
     def getJournalSelfCitationsByName(self, journal_name: str) -> list[JournalSelfCitation]:
 
         journal_self_citations = []
@@ -191,3 +194,13 @@ class FullQueryEngine(BasicQueryEngine):
                 references_of_bib_entity_within_timespan.append(citation)
 
         return references_of_bib_entity_within_timespan
+    
+
+if __name__ == "__main__":
+    # 1. Inizializzo l'oggetto
+    engine = FullQueryEngine()
+    
+    # 2. Eseguo il metodo passando la stringa dell'autore
+    autori = engine.getAuthorSelfCitationsByName("James")
+    
+    print(autori)
