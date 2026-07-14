@@ -33,34 +33,35 @@ class BasicQueryEngine:
         self.bibliographicEntityQuery.append(handler)
         return True
     
-    def getEntityById(self, id: str) -> IdentifiableEntity | None:
+    def getEntityById(self, id: str, is_citation: bool = None) -> IdentifiableEntity | None:
         entity = None
-        for bib_qh in self.bibliographicEntityQuery:  # loop through all bibliographic query handlers
-            df = bib_qh.getById(id)  # ask the handler to search the relational database for this id
-            #print(df)
-            if not df.empty:  # if a match was found (dataframe has at least one row)
-                row = df.iloc[0]  # take the first (and should be only) matching row
-                entity = BibliographicEntity(  # build and return a BibliographicEntity object from that row
-                    identifiers=row["ids"].split("; ") if pd.notna(row["ids"]) else [],  # split id string into list, or return empty list if none
-                    author=row["authors"].split("; ") if pd.notna(row["authors"]) else [],  # split author string into list, or return empty list if none
-                    title=row["title"],  # pass title directly
-                    publication_date=row["publication_date"],  # pass publication date directly
-                    venue=row["venue"],  # pass venue directly
-                )
-                #print(entity.__dict__)
-            
+        if not is_citation:
+            for bib_qh in self.bibliographicEntityQuery:  # loop through all bibliographic query handlers
+                df = bib_qh.getById(id)  # ask the handler to search the relational database for this id
+                #print(df)
+                if not df.empty:  # if a match was found (dataframe has at least one row)
+                    row = df.iloc[0]  # take the first (and should be only) matching row
+                    entity = BibliographicEntity(  # build and return a BibliographicEntity object from that row
+                        identifiers=row["ids"].split("; ") if pd.notna(row["ids"]) else [],  # split id string into list, or return empty list if none
+                        author=row["authors"].split("; ") if pd.notna(row["authors"]) else [],  # split author string into list, or return empty list if none
+                        title=row["title"],  # pass title directly
+                        publication_date=row["publication_date"],  # pass publication date directly
+                        venue=row["venue"],  # pass venue directly
+                    )
+                    #print(entity.__dict__)
+
         for cit_qh in self.citationQuery:
             df = cit_qh.getById(id)
             if not df.empty:
                 row = df.iloc[0]
-                citing = self.getEntityById(row["citing"])
-                cited = self.getEntityById(row["cited"])
+                citing = self.getEntityById(row["citing"], True) 
+                cited = self.getEntityById(row["cited"], True)
                 ids = []
                 ids.append(row["oci"])
                 entity = Citation(ids, row["creation"], row["timespan"], citing, cited)
         #print(entity.__dict__)
         return entity
-    
+        
  
     def getAllCitations(self) -> list[Citation]:
         # placeholder for looping through citationQuery handler, merge Dataframes, convert into list of Citation objects
@@ -75,8 +76,8 @@ class BasicQueryEngine:
         for idx, row in df_citations.iterrows():
             ids = []
             ids.append(row["oci"])
-            citing = self.getEntityById(row["citing"])
-            cited = self.getEntityById(row["cited"])
+            citing = self.getEntityById(row["citing"], True)
+            cited = self.getEntityById(row["cited"], True)
             if not row["author_sc"] and not row["journal_sc"]:
                 citations.append(Citation(ids, row["creation"], row["timespan"], citing, cited))
             else:
@@ -103,8 +104,8 @@ class BasicQueryEngine:
         for idx, row in df_citations.iterrows():
             ids = []
             ids.append(row["oci"])
-            citing = self.getEntityById(row["citing"])
-            cited = self.getEntityById(row["cited"])
+            citing = self.getEntityById(row["citing"], True)
+            cited = self.getEntityById(row["cited"], True)
             citation = AuthorSelfCitation(ids, row["creation"], row["timespan"], citing, cited)
             citations.append(citation)
         
@@ -122,8 +123,8 @@ class BasicQueryEngine:
         for idx, row in df_citations.iterrows():
             ids = []
             ids.append(row["oci"])
-            citing = self.getEntityById(row["citing"])
-            cited = self.getEntityById(row["cited"])
+            citing = self.getEntityById(row["citing"], True)
+            cited = self.getEntityById(row["cited"], True)
             citation = JournalSelfCitation(ids, row["creation"], row["timespan"], citing, cited)
             citations.append(citation)
         print(len(citations))
@@ -140,8 +141,8 @@ class BasicQueryEngine:
         for idx, row in df_citations.iterrows():
             ids = []
             ids.append(row["oci"])
-            citing = self.getEntityById(row["citing"])
-            cited = self.getEntityById(row["cited"])
+            citing = self.getEntityById(row["citing"], True)
+            cited = self.getEntityById(row["cited"], True)
             if row["author_sc"]:
                 citation = AuthorSelfCitation(ids, row["creation"], row["timespan"], citing, cited)
             elif row["journal_sc"]:
@@ -163,8 +164,8 @@ class BasicQueryEngine:
         for idx, row in df_citations.iterrows():
             ids = []
             ids.append(row["oci"])
-            citing = self.getEntityById(row["citing"])
-            cited = self.getEntityById(row["cited"])
+            citing = self.getEntityById(row["citing"], True)
+            cited = self.getEntityById(row["cited"], True)
             if row["author_sc"]:
                 citation = AuthorSelfCitation(ids, row["creation"], row["timespan"], citing, cited)
             elif row["journal_sc"]:
