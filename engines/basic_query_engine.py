@@ -35,7 +35,18 @@ class BasicQueryEngine:
     
     def getEntityById(self, id: str, is_citation: bool = None) -> IdentifiableEntity | None:
         entity = None
-        if not is_citation:
+        if is_citation is not False:
+            for cit_qh in self.citationQuery:
+            df = cit_qh.getById(id)
+            if not df.empty:
+                row = df.iloc[0]
+                citing = self.getEntityById(row["citing"], False) 
+                cited = self.getEntityById(row["cited"], False)
+                ids = []
+                ids.append(row["oci"])
+                entity = Citation(ids, row["creation"], row["timespan"], citing, cited)
+
+        if entity is None:    
             for bib_qh in self.bibliographicEntityQuery:  # loop through all bibliographic query handlers
                 df = bib_qh.getById(id)  # ask the handler to search the relational database for this id
                 #print(df)
@@ -49,17 +60,7 @@ class BasicQueryEngine:
                         venue=row["venue"],  # pass venue directly
                     )
                     #print(entity.__dict__)
-
-        for cit_qh in self.citationQuery:
-            df = cit_qh.getById(id)
-            if not df.empty:
-                row = df.iloc[0]
-                citing = self.getEntityById(row["citing"], True) 
-                cited = self.getEntityById(row["cited"], True)
-                ids = []
-                ids.append(row["oci"])
-                entity = Citation(ids, row["creation"], row["timespan"], citing, cited)
-        #print(entity.__dict__)
+        
         return entity
         
  
