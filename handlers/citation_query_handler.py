@@ -141,6 +141,10 @@ class CitationQueryHandler(QueryHandler):
     def getCitationsWithinTimespan(self, min_timespan: str = None, max_timespan: str = None) -> pd.DataFrame:
         # Works with timespans in formats PxY, PxYyM, PxYyMzD, but also without "P"
         # Roughly convert input timespans in days
+        if min_timespan == "":
+            min_timespan = None
+        if max_timespan == "":
+            max_timespan = None
 
         if not min_timespan and max_timespan:
             df_query = "timespan_days <= @max_timespan_days"
@@ -261,6 +265,7 @@ class CitationQueryHandler(QueryHandler):
         # Roughly converts durations into days assuming 1 year = 365 days and 1 month = 30 days
         
         # This is redundant, empty timespans already filtered, but let's keep this anyways
+
         if pd.isna(timespan):
             return None
         
