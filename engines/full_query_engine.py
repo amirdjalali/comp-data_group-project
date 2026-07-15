@@ -21,14 +21,14 @@ class FullQueryEngine(BasicQueryEngine):
         for author_entity in author_bib_entities:
             
             for id in author_entity.getIds():
-                #if id[:4] == "omid": -> inutile, li aggiungo già tutti e verifico dopo se l'omid che mi interessa è presente tra le chiavi del dizionario
                 entities_dict[id] = author_entity
+        
         #if the author has no bibliographic entities associated with them, return an empty list
         if not entities_dict:
             return []
     
 
-        #loop through the list of all the author self-citations and check if both citing and cited entities belong to the author
+        #loop through the list of all the author self-citations and check if both citing and cited entities belong to the author. If so, then append to the list "author_self_citations"
         for citation in all_author_self_citations:
             
             citing_entity = citation.getCitingEntity()
@@ -49,35 +49,9 @@ class FullQueryEngine(BasicQueryEngine):
             if has_citing_entity and has_cited_entity:
                 author_self_citations.append(citation)
 
-
-            #Initializing variables to store the enriched citing and cited entities
-            #enriched_citing = None
-            #enriched_cited = None
-
-            #since getCitingEntity and getCitedEntity return BibliographicEntity objects, we can check if any of their IDs is a valid key in the dictionary.
-            #for id in citing_entity.getIds():
-            #    if id in entities_dict:
-            #        enriched_citing = entities_dict[id]
-            #        print(f"enriched citing:{enriched_citing}")
-            #        break
-            
-            #for id in cited_entity.getIds():
-            #    if id in entities_dict:
-            #        enriched_cited = entities_dict[id]
-            #        print(f"enriched cited:{enriched_citing}")
-            #        break
-
-            #if both entities are written by the author, enrich the citation and store it
-            #if enriched_citing and enriched_cited:
-
-            #    citation.hasCitingEntity = enriched_citing
-            #    citation.hasCitedEntity = enriched_cited
-
-                #author_self_citations.append(citation)
-
         return author_self_citations
     
-    
+
     def getJournalSelfCitationsByName(self, journal_name: str) -> list[JournalSelfCitation]:
 
         journal_self_citations = []
@@ -99,22 +73,18 @@ class FullQueryEngine(BasicQueryEngine):
             citing_entity = citation.getCitingEntity()
             cited_entity = citation.getCitedEntity()
 
-            
-            enriched_citing = None
-            enriched_cited = None
+            has_citing = 0
+            has_cited = 0
 
             for id in citing_entity.getIds():
                 if id in entities_dict:
-                    enriched_citing = entities_dict[id]
+                    has_citing += 1
 
             for id in cited_entity.getIds():
                 if id in entities_dict:
-                    enriched_cited = entities_dict[id]
+                    has_cited += 1
 
-            if enriched_citing and enriched_cited:
-                
-                citation.hasCitingEntity = enriched_citing
-                citation.hasCitedEntity = enriched_cited
+            if has_citing and has_cited:
                 journal_self_citations.append(citation)
 
         return journal_self_citations
@@ -139,7 +109,6 @@ class FullQueryEngine(BasicQueryEngine):
 
         for citation in all_citations:
             cited_entity = citation.getCitedEntity()
-            #citing_entity = citation.getCitingEntity()
 
             is_in_dict = 0
 
@@ -174,7 +143,6 @@ class FullQueryEngine(BasicQueryEngine):
 
         for citation in all_citations:
             citing_entity = citation.getCitingEntity()
-            #cited_entity = citation.getCitedEntity()
 
             has_citing_entity = 0
 
@@ -209,23 +177,31 @@ class FullQueryEngine(BasicQueryEngine):
         # 3. Esecuzione
 
         #res = que.getAuthorSelfCitationsByNam("Dan")
-        #res2 = que.getAuthorSelfCitationsByName("Dan")
+        #res = que.getAuthorSelfCitationsByName("Bostenaru")
         
         #res = que.getJournalSelfCitationsByName("Digital Scholarship In The Humanities")
 
-        #res = que.getCitationsOfBibEntityByTitleWithinDate("Distant Viewing: Analyzing Large Visual Corpora", "2019", "2025")
+        #res = que.getCitationsOfBibEntityByTitleWithinDate("sick", "", "")
 
-        #res = que.getReferencesOfBibEntityByTitleWithinTimespa("Revisiting The Digital Humanities Through The Lens Of Indigenous Studies—Or How To Question The Cultural Blindness Of Our Technologies And Practices", "", "")
+        res = que.getReferencesOfBibEntityByTitleWithinTimespan("Revisiting", "", "")
 
-        res = que.getCitationsOfBibEntityByTitleWithinDate("Dewey Deracialized","2021", "2025")
+        #res = que.getCitationsOfBibEntityByTitleWithinDate("","2021", "2021-01-02")
 
+        #res = que.getJournalSelfCitationsByName("Industry And Higher Education")
 
         # 4. Stampe di controllo
         #print(f"il tipo è: {type(res[0])}")
         #print(res)
         
         print(len(res))
-        print(res[0].getTitle())
+        print(type(res[0]))
+        x = 1
+        for i in res:
+            print(f"citazione numero {x}")
+            print(i.getCitingEntity().getTitle())
+            print(i.getCitedEntity().getTitle())
+            x+=1
+            #print(i.__dict__)
         
         #for i in res2:
         #    print("citation:\n")
