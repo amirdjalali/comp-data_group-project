@@ -179,11 +179,11 @@ class FullQueryEngine(BasicQueryEngine):
         #res = que.getAuthorSelfCitationsByNam("Dan")
         #res = que.getAuthorSelfCitationsByName("Bostenaru")
         
-        #res = que.getJournalSelfCitationsByName("Digital Scholarship In The Humanities")
+        res = que.getJournalSelfCitationsByName("Digital Scholarship In The Humanities")
 
         #res = que.getCitationsOfBibEntityByTitleWithinDate("sick", "", "")
 
-        res = que.getReferencesOfBibEntityByTitleWithinTimespan("Revisiting", "", "")
+        #res = que.getReferencesOfBibEntityByTitleWithinTimespan("Revisiting", "", "")
 
         #res = que.getCitationsOfBibEntityByTitleWithinDate("","2021", "2021-01-02")
 
@@ -197,10 +197,14 @@ class FullQueryEngine(BasicQueryEngine):
         print(type(res[0]))
         x = 1
         for i in res:
-            print(f"citazione numero {x}")
-            print(i.getCitingEntity().getTitle())
-            print(i.getCitedEntity().getTitle())
-            x+=1
+            print(f"citazione numero {x} \n")
+            print(i.getCitingEntity().getVenue())
+            print(i.getCitedEntity().getVenue())
+        #for i in res:
+        #    print(f"citazione numero {x}")
+        #    print(i.getCitingEntity().getTitle())
+        #    print(i.getCitedEntity().getTitle())
+        #    x+=1
             #print(i.__dict__)
         
         #for i in res2:

@@ -26,7 +26,7 @@ class BasicQueryEngine:
         # duplicate check?
         return True
 
-    def getCitationHandlers(self) -> list:
+    def getCitationHandlers(self) -> list[CitationQueryHandler]:
         return self.citationQuery
     
     def addBibliographicEntityHandler(self, handler: BibliographicEntityQueryHandler) -> bool:
@@ -67,10 +67,19 @@ class BasicQueryEngine:
     def getAllCitations(self) -> list[Citation]:
         # placeholder for looping through citationQuery handler, merge Dataframes, convert into list of Citation objects
         handlers = self.getCitationHandlers() 
-        df_citations = pd.DataFrame()
-        for handler in handlers:
-            df_citations =  pd.concat([df_citations, handler.getAllCitations()], ignore_index=True)
+        #df_citations = pd.DataFrame()
+        #for handler in handlers:
+        #    df_citations =  pd.concat([df_citations, handler.getAllCitations()], ignore_index=True)
         #print(df_citations)
+
+        dataframes: list[pd.DataFrame]  = []
+        for handler in handlers:
+            new_df = handler.getAllAuthorSelfCitations()
+            dataframes.append(new_df)
+
+        df_citations = pd.concat(dataframes, ignore_index=True)
+
+        
 
         citations = []
 
@@ -91,11 +100,15 @@ class BasicQueryEngine:
 
     
     def getAllAuthorSelfCitations(self) -> list[AuthorSelfCitation]:
+
         handlers = self.getCitationHandlers()
-        df_citations = pd.DataFrame()
+
+        dataframes: list[pd.DataFrame]  = []
         for handler in handlers:
-            df_citations =  pd.concat([df_citations, handler.getAllAuthorSelfCitations()], ignore_index=True)
-        #print(df_citations)
+            new_df = handler.getAllAuthorSelfCitations()
+            dataframes.append(new_df)
+
+        df_citations = pd.concat(dataframes, ignore_index=True)
 
         citations = []
 
@@ -112,10 +125,13 @@ class BasicQueryEngine:
     
     def getAllJournalSelfCitations(self) -> list[JournalSelfCitation]:
         handlers = self.getCitationHandlers()
-        df_citations = pd.DataFrame()
+
+        dataframes: list[pd.DataFrame] = []
         for handler in handlers:
-            df_citations =  pd.concat([df_citations, handler.getAllJournalSelfCitations()], ignore_index=True)
-        #print(df_citations)
+            new_df = handler.getAllJournalSelfCitations()
+            dataframes.append(new_df)
+
+        df_citations = pd.concat(dataframes, ignore_index=True)
         citations = []
 
         for idx, row in df_citations.iterrows():
@@ -130,10 +146,18 @@ class BasicQueryEngine:
     
     def getCitationsWithinTimespan(self, min_timespan: str = None, max_timespan: str = None) -> list[Citation]:
         handlers = self.getCitationHandlers()
-        df_citations = pd.DataFrame()
-        for handler in handlers:
-            df_citations =  pd.concat([df_citations, handler.getCitationsWithinTimespan(min_timespan, max_timespan)], ignore_index=True)
+        #df_citations = pd.DataFrame()
+        #for handler in handlers:
+        #    df_citations =  pd.concat([df_citations, handler.getCitationsWithinTimespan(min_timespan, max_timespan)], ignore_index=True)
         #print(df_citations)
+
+        dataframes: list[pd.DataFrame]  = []
+        for handler in handlers:
+            new_df = handler.getCitationsWithinTimespan(min_timespan, max_timespan)
+            dataframes.append(new_df)
+
+        df_citations = pd.concat(dataframes, ignore_index=True)
+
         citations = []
 
         for idx, row in df_citations.iterrows():
@@ -153,10 +177,12 @@ class BasicQueryEngine:
 
     def getCitationsWithinDate(self, start_date: str = None, end_date: str = None) -> list[Citation]:
         handlers = self.getCitationHandlers()
-        df_citations = pd.DataFrame()
+        dataframes: list[pd.DataFrame]  = []
         for handler in handlers:
-            df_citations =  pd.concat([df_citations, handler.getCitationsWithinDate(start_date, end_date)], ignore_index=True)
-        #print(df_citations)
+            new_df = handler.getCitationsWithinDate(start_date, end_date)
+            dataframes.append(new_df)
+
+        df_citations = pd.concat(dataframes, ignore_index=True)
         citations = []
 
         for idx, row in df_citations.iterrows():
@@ -254,13 +280,15 @@ if __name__ == "__main__":
     que = BasicQueryEngine()
     que.addCitationHandler(cit_qh)
     que.addBibliographicEntityHandler(bib_qh)
-    print(que.bibliographicEntityQuery)
-    print(que.citationQuery)
+    #print(que.bibliographicEntityQuery)
+    #print(que.citationQuery)
     #que.getAllCitations()
-    print(que.getEntityById("0603926682-06160449684").__dict__)
-    #que.getAllAuthorSelfCitations()
+    #print(que.getEntityById("0603926682-06160449684").__dict__)
+
+        #que.getAllAuthorSelfCitations()
     #que.getAllJournalSelfCitations()
-    # que.getCitationsWithinTimespan()
+    res = que.getCitationsWithinTimespan("P1Y", "P4Y")
+    print(len(res))
     # que.getCitationsWithinDate()
 
 
