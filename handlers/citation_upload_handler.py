@@ -30,14 +30,12 @@ class CitationUploadHandler(UploadHandler):
                                 "author_sc": "string"
                             })
     
-        citation_oci_urls = {} # i think this is redundant?
         number_of_citations = len(citations)
         print(f"Starting to parse citations from {path}")
         
         for idx, row in citations.iterrows():
             print(f"Adding row {idx} of {number_of_citations}", end="\r")
             citation_url = URIRef(oci_base_url + row["oci"])
-            citation_oci_urls["oci_url"] = citation_url # OCIs are unique by design
 
             citation_graph.add((citation_url, SCHEMA.identifier, Literal(row["oci"])))
             citation_graph.add((citation_url, RDF.type, CITO.Citation))
