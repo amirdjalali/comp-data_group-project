@@ -12,9 +12,9 @@ The project was realized by:
 
 [simulateher](https://github.com/simulateher): `BibliographicEntityQueryHandler`. 
 
-[rdemauro]https://github.com/rdemauro: `BibliographicEntityUploadHandler`, `BasicQueryEngine`, classes for data model.
+[rdemauro](https://github.com/rdemauro): `BibliographicEntityUploadHandler`, `BasicQueryEngine`, classes for data model.
 
-[amirdjalali]https://github.com/amirdjalali: `CitationUploadHandler`, `CitationQueryHandler`, `BasicQueryEngine`.
+[amirdjalali](https://github.com/amirdjalali): `CitationUploadHandler`, `CitationQueryHandler`, `BasicQueryEngine`.
 
 ## How to use
 
