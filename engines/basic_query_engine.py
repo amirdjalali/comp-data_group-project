@@ -7,11 +7,13 @@ from model.bibliographic_entity import BibliographicEntity
 from model.author_self_citation import AuthorSelfCitation
 from model.journal_self_citation import JournalSelfCitation
 from typing import Optional
+from functools import lru_cache
 
 class BasicQueryEngine:
     def __init__(self) -> None:
         self.citationQuery = []
         self.bibliographicEntityQuery = []
+        self._entity_cache: dict[str, IdentifiableEntity] = {}
     
     def cleanCitationHandlers(self) -> bool:
         self.citationQuery = []
@@ -34,7 +36,12 @@ class BasicQueryEngine:
         return True
     
     def getEntityById(self, id: str, is_citation: bool = None) -> IdentifiableEntity | None:
+        # Check cache first
+        if id in self._entity_cache:
+            return self._entity_cache[id]
+        
         entity = None
+        
         if is_citation is not False:
             for cit_qh in self.citationQuery:
                 df = cit_qh.getById(id)
@@ -61,6 +68,8 @@ class BasicQueryEngine:
                     )
                     #print(entity.__dict__)
         
+        if entity:
+            self._entity_cache[id] = entity
         return entity
         
  
