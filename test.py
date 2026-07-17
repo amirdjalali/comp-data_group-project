@@ -151,28 +151,28 @@ class TestProjectBasic(unittest.TestCase):
         for i in r:
             self.assertIsInstance(i, BibliographicEntity)
 
-    #     # FullQueryEngine
-    #     # -----
+        # FullQueryEngine
+        # -----
 
-    #     r = fq.getAuthorSelfCitationsByName("Matt")
-    #     self.assertIsInstance(r, list)
-    #     for i in r:
-    #         self.assertIsInstance(i, AuthorSelfCitation)
+        r = fq.getAuthorSelfCitationsByName("Matt")
+        self.assertIsInstance(r, list)
+        for i in r:
+            self.assertIsInstance(i, AuthorSelfCitation)
 
-    #     r = fq.getJournalSelfCitationsByName("Digital Scholarship In The Humanities")
-    #     self.assertIsInstance(r, list)
-    #     for i in r:
-    #         self.assertIsInstance(i, JournalSelfCitation)
+        r = fq.getJournalSelfCitationsByName("Digital Scholarship In The Humanities")
+        self.assertIsInstance(r, list)
+        for i in r:
+            self.assertIsInstance(i, JournalSelfCitation)
 
-    #     r = fq.getCitationsOfBibEntityByTitleWithinDate("machine learning", "2005", "2015")
-    #     self.assertIsInstance(r, list)
-    #     for i in r:
-    #         self.assertIsInstance(i, Citation)
+        r = fq.getCitationsOfBibEntityByTitleWithinDate("machine learning", "2005", "2015")
+        self.assertIsInstance(r, list)
+        for i in r:
+            self.assertIsInstance(i, Citation)
 
-    #     r = fq.getReferencesOfBibEntityByTitleWithinTimespan("library", "P2Y", "P15Y")
-    #     self.assertIsInstance(r, list)
-    #     for i in r:
-    #         self.assertIsInstance(i, Citation)
+        r = fq.getReferencesOfBibEntityByTitleWithinTimespan("library", "P2Y", "P15Y")
+        self.assertIsInstance(r, list)
+        for i in r:
+            self.assertIsInstance(i, Citation)
 
 if __name__ == '__main__':
     unittest.main()

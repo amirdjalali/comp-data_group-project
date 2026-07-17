@@ -74,7 +74,7 @@ class BasicQueryEngine:
 
         dataframes: list[pd.DataFrame]  = []
         for handler in handlers:
-            new_df = handler.getAllAuthorSelfCitations()
+            new_df = handler.getAllCitations()
             dataframes.append(new_df)
 
         df_citations = pd.concat(dataframes, ignore_index=True)
