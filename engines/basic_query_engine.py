@@ -8,6 +8,7 @@ from model.author_self_citation import AuthorSelfCitation
 from model.journal_self_citation import JournalSelfCitation
 from typing import Optional
 from functools import lru_cache
+import json
 
 class BasicQueryEngine:
     def __init__(self) -> None:
@@ -62,7 +63,7 @@ class BasicQueryEngine:
                 if not df.empty:
                     row = df.iloc[0] # pick the first (and perhaps only) result
                     # recursive step! check for citing and cited bibliographic entities
-                    citing = self.getEntityById(row["citing"], False) 
+                    citing = self.getEntityById(row["citing"], False)
                     cited = self.getEntityById(row["cited"], False)
                     # citations have only one id, but we store it in a list anyways
                     ids = []
@@ -88,12 +89,9 @@ class BasicQueryEngine:
                         publication_date=row["publication_date"],  # pass publication date directly
                         venue=row["venue"],  # pass venue directly
                     )
-                    #print(entity.__dict__)
         
-        # if an entity is found, then add it first to the cache dictionary, then return it
-        if entity:
-            self._entity_cache[id] = entity
-
+        # first add the entity, even if it's None, to the cache dictionary, then return it
+        self._entity_cache[id] = entity
         return entity
         
     def getAllCitations(self) -> list[Citation]:
@@ -341,13 +339,14 @@ if __name__ == "__main__":
     que.addBibliographicEntityHandler(bib_qh)
     #print(que.bibliographicEntityQuery)
     #print(que.citationQuery)
-    #que.getAllCitations()
-    #print(que.getEntityById("0603926682-06160449684").__dict__)
+    que.getAllCitations()
+
+    #print(que.getEntityById("06380128276-0670606001").__dict__)
 
         #que.getAllAuthorSelfCitations()
     #que.getAllJournalSelfCitations()
-    res = que.getCitationsWithinTimespan("P1Y", "P4Y")
-    print(len(res))
+    #res = que.getCitationsWithinTimespan("P1Y", "P4Y")
+    #print(len(res))
     # que.getCitationsWithinDate()
 
 
