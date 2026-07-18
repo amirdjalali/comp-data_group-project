@@ -347,7 +347,20 @@ if __name__ == "__main__":
     #que.getAllJournalSelfCitations()
     #res = que.getCitationsWithinTimespan("P1Y", "P4Y")
     #print(len(res))
-    # que.getCitationsWithinDate()
+    #res = que.getEntityById("omid:br/06380128276")
+    #print(res.__dict__)
+
+    res = que.getAllCitations()
+    
+    for i in res:
+        tipo1 = type(i.getCitingEntity())
+        tipo2 = type(i.getCitedEntity())
+        if "<class 'model.bibliographic_entity.BibliographicEntity'>" not in str(tipo1):
+            print(f"Questa citing {i.__dict__} è None")
+        elif "<class 'model.bibliographic_entity.BibliographicEntity'>" not in str(tipo2):
+            print(f"Questa cited {i.__dict__} è None")
+    
+    #que.getCitationsWithinDate()
 
 
         
