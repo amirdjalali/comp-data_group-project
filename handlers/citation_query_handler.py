@@ -1,7 +1,7 @@
 from .query_handler import QueryHandler
 import pandas as pd
 from sparql_dataframe import get
-import re
+import re # regular expressions to validate dates and timespans
 from pandas import read_csv, Series
 
 
@@ -14,7 +14,10 @@ class CitationQueryHandler(QueryHandler):
         oci = id
         if "https://w3id.org/oc/index/ci/" not in oci:
             oci = "https://w3id.org/oc/index/ci/" + id
-        #try to understand if we need to check whether the id needs to be checked or not from citation_upload_handler.py (maybe not, since the upload handler already checks that the OCIs are in the correct format, but maybe we can add this check just to be sure)
+
+        # try to understand if we need to check whether the id needs to be checked or not from citation_upload_handler.py 
+        # (maybe not, since the upload handler already checks that the OCIs are in the correct format, but maybe we can add 
+        # this check just to be sure)
     
         query = f"""
                 PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -35,6 +38,21 @@ class CitationQueryHandler(QueryHandler):
                     BIND(IF(EXISTS {{ ?oci a cito:AuthorSelfCitation }}, "True", "False") AS ?author_sc)
                 }}
             """
+        
+        # BIND assigns the result of an expression to a variable
+        # BIND (expression AS ?variable)
+        # IF assigns a value to a condition
+        # IF (condition, value if true, value if false)
+        # EXISTS returns true if a graph pattern has at least one match
+        # EXISTS { pattern }
+
+        # So, EXISTS { ?oci a cito:JournalSelfCitation } means
+        # if ?oci is a journal self citation, it retursn true, otherwise it returns false
+
+        # IF assings the value "True" in case the EXISTS condition is true
+        # otherwise, it assignes "False"
+
+        # BIND saves the result as ?journal_sc
     
         df_sparql = get(endpoint, query, True)
         return df_sparql
@@ -88,17 +106,6 @@ class CitationQueryHandler(QueryHandler):
         """
         # transform the tripes into a dataframe with the following columns: oci,citing,cited,creation,timespan,journal_sc
         df_sparql = get(endpoint, query, True)
-
-        # replace NaN values with empty string
-        # df_sparql = get(endpoint, query, True).fillna('')
-
-        # convert creation date from string to datetime
-        df_sparql["creation"] = pd.to_datetime(df_sparql["creation"], format="%Y-%m-%d")
-
-        # Pandas already sees journal_sc as bool so no need for this
-        # df_sparql["journal_sc"] = df_sparql["journal_sc"].astype("bool")
-
-        # Convert timespan in timespans
        
         return df_sparql
 
@@ -127,15 +134,6 @@ class CitationQueryHandler(QueryHandler):
         # transform the tripes into a dataframe with the following columns: oci,citing,cited,creation,timespan,journal_sc
         df_sparql = get(endpoint, query, True)
 
-        # replace NaN values with empty string
-        # df_sparql = get(endpoint, query, True).fillna('')
-
-        # convert creation date from string to datetime
-        df_sparql["creation"] = pd.to_datetime(df_sparql["creation"], format="%Y-%m-%d")
-
-        # Pandas already sees author_sc as bool so no need for this
-        # df_sparql["author_sc"] = df_sparql["author_sc"].astype("bool")
-       
         return df_sparql
 
     def getCitationsWithinTimespan(self, min_timespan: str = None, max_timespan: str = None) -> pd.DataFrame:
@@ -193,30 +191,49 @@ class CitationQueryHandler(QueryHandler):
 
         # Remove timespan_days column
         df_sparql.drop(columns=["timespan_days"], inplace=True)
-
-        # Empty durations strings already filtered out
-        # df_sparql = get(endpoint, query, True).fillna('')
-
-        # convert creation date from string to datetime
-        df_sparql["creation"] = pd.to_datetime(df_sparql["creation"], format="%Y-%m-%d")
-
-        # Pandas already sees author_sc as bool so no need for this
-        # df_sparql["author_sc"] = df_sparql["author_sc"].astype("bool")
        
         return df_sparql
     
 
     def getCitationsWithinDate(self, start_date: str = None, end_date: str = None) -> pd.DataFrame:
         # Works with dates in formats YYYY, YYYY-MM, YYYY-MM-DD
-        # In case YYYY is provided, it considers YYYY-01-01
-        # In case YYYY-MM is provided, it considers YYYY-MM-01
+        # For start date, in case YYYY is provided, it considers YYYY-01-01, 
+        # and in case YYYY-MM is provided, it considers YYYY-MM-01
+        # For end date, in case YYYY is provided, it considers YYYY-12-31,
+        # and in case YYYY-MM is provided, it considers YYYY-MM-28
 
         filters = ""
 
-        if end_date:
-            filters += f"    FILTER (?creation <= \"{end_date}\"^^xsd:date)\n"
+        start_date = self._validate(start_date)
+        end_date = self._validate(end_date)
+
+        print(start_date, end_date)
+
         if start_date:
-            filters += f"    FILTER (?creation >= \"{start_date}\"^^xsd:date)"
+            start_date_parts = start_date.split("-")
+
+            if len(start_date_parts) == 2:
+                start_date = f"{start_date}-01"
+            elif len(start_date_parts) == 1:
+                start_date = f"{start_date}-01-01"
+
+            print(f"start date is {start_date}")
+
+            filters += f"    FILTER (?creation >= \"{start_date}\")\n"
+
+        if end_date:
+
+            end_date_parts = end_date.split("-")
+
+            if len(end_date_parts) == 2:
+                end_date = f"{end_date}-28"
+            elif len(end_date_parts) == 1:
+                end_date = f"{end_date}-12-31"
+
+            print(f"end date is {end_date}")
+
+            filters += f"    FILTER (?creation <= \"{end_date}\")\n"
+            
     
         # first connect to db
         endpoint = "http://localhost:9999/blazegraph/sparql"
@@ -247,18 +264,26 @@ class CitationQueryHandler(QueryHandler):
         # transform the tripes into a dataframe with the following columns: oci,citing,cited,creation,timespan,journal_sc
         df_sparql = get(endpoint, query, True)
 
-        # replace NaN values with empty string
-        # df_sparql = get(endpoint, query, True).fillna('')
-
-        # convert creation date from string to datetime
-        df_sparql["creation"] = pd.to_datetime(df_sparql["creation"], format="%Y-%m-%d")
-
-        # Pandas already sees author_sc as bool so no need for this
-        # df_sparql["author_sc"] = df_sparql["author_sc"].astype("bool")
-       
         return df_sparql
-        
     
+
+    @staticmethod
+    def _validate(d: str) -> str:
+    # validate dates. It performs a regex query on the date. if date is not in the format
+    # YYYY or YYYY-MM or YYYY-MM-DD, it raises ValueError
+
+    # regex explained
+    # r"" means raw string, so \ characters are not escaped
+    # first four digits \d{4}
+    # optionally, find "-" followed by two digits \d{2}
+    # optionally, find "-" followed by two digits \d{2}
+
+        if d is None or d == "":
+            return None
+        if not re.fullmatch(r"\d{4}(-\d{2}(-\d{2})?)?", d):
+            raise ValueError(f"Invalid date format: {d!r}")
+        return d
+        
     @staticmethod
     def duration_to_days(timespan: str) -> int:
         # Durations are expressed as PxxYyyMzzD
@@ -312,9 +337,9 @@ if __name__ == "__main__":
     # print(df_all_journal_sc.dtypes)
     # print(df_all_journal_sc)
 
-    #df_citations_within_dates = handler.getCitationsWithinDate("2024-01","2025")
-    #print(df_citations_within_dates.dtypes)
-    #print(df_citations_within_dates)
+    df_citations_within_dates = handler.getCitationsWithinDate("2020-99")
+    print(df_citations_within_dates.dtypes)
+    print(df_citations_within_dates)
 
     #df_citations_within_timespans = handler.getCitationsWithinTimespan("-99Y", "0")
     #print(df_citations_within_timespans.dtypes)
