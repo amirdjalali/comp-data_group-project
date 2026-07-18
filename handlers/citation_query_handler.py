@@ -11,21 +11,11 @@ class CitationQueryHandler(QueryHandler):
     
         endpoint = self.getDbPathOrUrl()
 
-<<<<<<< Updated upstream
-        oci = id
-        if "https://w3id.org/oc/index/ci/" not in oci:
-            oci = "https://w3id.org/oc/index/ci/" + id
-
-        # try to understand if we need to check whether the id needs to be checked or not from citation_upload_handler.py 
-        # (maybe not, since the upload handler already checks that the OCIs are in the correct format, but maybe we can add 
-        # this check just to be sure)
-=======
         #if the user provides the full url, in case there are errors in the input, we can extract the clean id from the url and use it to query the database
         clean_id = id.split("/")[-1]
 
         oci = "https://w3id.org/oc/index/ci/" + clean_id
         #try to understand if we need to check whether the id needs to be checked or not from citation_upload_handler.py (maybe not, since the upload handler already checks that the OCIs are in the correct format, but maybe we can add this check just to be sure)
->>>>>>> Stashed changes
     
         query = f"""
                 PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
