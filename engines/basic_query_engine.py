@@ -13,6 +13,12 @@ class BasicQueryEngine:
     def __init__(self) -> None:
         self.citationQuery = []
         self.bibliographicEntityQuery = []
+
+        # this is the cache dictionary which is used to store entities by ids,
+        # in order to speed up entity lookup by id
+        # The leading underscore is just a convetion to show that the attribute will
+        # only be used internally
+        
         self._entity_cache: dict[str, IdentifiableEntity] = {}
     
     def cleanCitationHandlers(self) -> bool:
@@ -28,6 +34,8 @@ class BasicQueryEngine:
         # duplicate check?
         return True
 
+    # added this, but actually one could just call self.citationQuery
+
     def getCitationHandlers(self) -> list[CitationQueryHandler]:
         return self.citationQuery
     
@@ -36,22 +44,36 @@ class BasicQueryEngine:
         return True
     
     def getEntityById(self, id: str, is_citation: bool = None) -> IdentifiableEntity | None:
-        # Check cache first
+        # is_citation optional argument is used only when calling getEntityById 
+        # when looking up bibliographic entities to complete citation etities.
+        # This skips looking the id in the citationQuery, looking them up directly in the 
+        # bibliographicEntityQuery. This also constitutes a sort of "base case" for recursion
+        
+        # Check cache first. If entity with that id is already stored, just return it!
         if id in self._entity_cache:
             return self._entity_cache[id]
         
         entity = None
         
+        # if is_citation is True or None, look first into citations
         if is_citation is not False:
             for cit_qh in self.citationQuery:
                 df = cit_qh.getById(id)
                 if not df.empty:
-                    row = df.iloc[0]
+                    row = df.iloc[0] # pick the first (and perhaps only) result
+                    # recursive step! check for citing and cited bibliographic entities
                     citing = self.getEntityById(row["citing"], False) 
                     cited = self.getEntityById(row["cited"], False)
+                    # citations have only one id, but we store it in a list anyways
                     ids = []
                     ids.append(row["oci"])
-                    entity = Citation(ids, row["creation"], row["timespan"], citing, cited)
+                    # Create the actual citation entity. Calling each of the attributes explicitly by name
+                    # in the constructor makes the code more robust, in case new attributes are added later
+                    entity = Citation(identifiers= ids,
+                                      creation=row["creation"],
+                                      timespan=row["timespan"],
+                                      citing_entity=citing,
+                                      cited_entity=cited)
 
         if entity is None:    
             for bib_qh in self.bibliographicEntityQuery:  # loop through all bibliographic query handlers
@@ -68,28 +90,27 @@ class BasicQueryEngine:
                     )
                     #print(entity.__dict__)
         
+        # if an entity is found, then add it first to the cache dictionary, then return it
         if entity:
             self._entity_cache[id] = entity
+
         return entity
         
- 
     def getAllCitations(self) -> list[Citation]:
-        # placeholder for looping through citationQuery handler, merge Dataframes, convert into list of Citation objects
+        # get the list of citation handlers
         handlers = self.getCitationHandlers() 
-        #df_citations = pd.DataFrame()
-        #for handler in handlers:
-        #    df_citations =  pd.concat([df_citations, handler.getAllCitations()], ignore_index=True)
-        #print(df_citations)
 
+        # create a list of dataframes first, then concatenate them later
         dataframes: list[pd.DataFrame]  = []
+
         for handler in handlers:
             new_df = handler.getAllCitations()
             dataframes.append(new_df)
 
+        # Concatenate the results from all citation handlers
         df_citations = pd.concat(dataframes, ignore_index=True)
 
-        
-
+        # Prepare a list of citation
         citations = []
 
         for idx, row in df_citations.iterrows():
@@ -98,15 +119,26 @@ class BasicQueryEngine:
             citing = self.getEntityById(row["citing"], False)
             cited = self.getEntityById(row["cited"], False)
             if not row["author_sc"] and not row["journal_sc"]:
-                citations.append(Citation(ids, row["creation"], row["timespan"], citing, cited))
+                citations.append(Citation(identifiers=ids,
+                                          creation=row["creation"],
+                                          timespan=row["timespan"],
+                                          citing_entity=citing,
+                                          cited_entity=cited))
             else:
                 if row["author_sc"]:
-                    citations.append(AuthorSelfCitation(ids, row["creation"], row["timespan"], citing, cited))
+                    citations.append(AuthorSelfCitation(identifiers=ids,
+                                                        creation=row["creation"],
+                                                        timespan=row["timespan"],
+                                                        citing_entity=citing,
+                                                        cited_entity=cited))
                 if row["journal_sc"]:
-                    citations.append(JournalSelfCitation(ids, row["creation"], row["timespan"], citing, cited))            
+                    citations.append(JournalSelfCitation(identifiers=ids,
+                                                         creation=row["creation"],
+                                                         timespan=row["timespan"],
+                                                         citing_entity=citing,
+                                                         cited_entity=cited))            
         
         return citations
-
     
     def getAllAuthorSelfCitations(self) -> list[AuthorSelfCitation]:
 
@@ -126,7 +158,11 @@ class BasicQueryEngine:
             ids.append(row["oci"])
             citing = self.getEntityById(row["citing"], False)
             cited = self.getEntityById(row["cited"], False)
-            citation = AuthorSelfCitation(ids, row["creation"], row["timespan"], citing, cited)
+            citation = AuthorSelfCitation(identifiers=ids,
+                                          creation=row["creation"],
+                                          timespan=row["timespan"],
+                                          citing_entity=citing,
+                                          cited_entity=cited)
             citations.append(citation)
         
         #print(len(citations))
@@ -148,17 +184,16 @@ class BasicQueryEngine:
             ids.append(row["oci"])
             citing = self.getEntityById(row["citing"], False)
             cited = self.getEntityById(row["cited"], False)
-            citation = JournalSelfCitation(ids, row["creation"], row["timespan"], citing, cited)
+            citation = JournalSelfCitation(identifiers=ids,
+                                           creation=row["creation"],
+                                           timespan=row["timespan"],
+                                           citing_entity=citing,
+                                           cited_entity=cited)
             citations.append(citation)
-        #print(len(citations))
         return citations
     
     def getCitationsWithinTimespan(self, min_timespan: str = None, max_timespan: str = None) -> list[Citation]:
         handlers = self.getCitationHandlers()
-        #df_citations = pd.DataFrame()
-        #for handler in handlers:
-        #    df_citations =  pd.concat([df_citations, handler.getCitationsWithinTimespan(min_timespan, max_timespan)], ignore_index=True)
-        #print(df_citations)
 
         dataframes: list[pd.DataFrame]  = []
         for handler in handlers:
@@ -175,9 +210,17 @@ class BasicQueryEngine:
             citing = self.getEntityById(row["citing"], False)
             cited = self.getEntityById(row["cited"], False)
             if row["author_sc"]:
-                citation = AuthorSelfCitation(ids, row["creation"], row["timespan"], citing, cited)
+                citation = AuthorSelfCitation(identifiers=ids,
+                                              creation=row["creation"],
+                                              timespan=row["timespan"],
+                                              citing_entity=citing,
+                                              cited_entity=cited)
             elif row["journal_sc"]:
-                citation = JournalSelfCitation(ids, row["creation"], row["timespan"], citing, cited)
+                citation = JournalSelfCitation(identifiers=ids,
+                                               creation=row["creation"],
+                                               timespan=row["timespan"],
+                                               citing_entity=citing,
+                                               cited_entity=cited)
             else:
                 citation = Citation(ids, row["creation"], row["timespan"], citing, cited)
             citations.append(citation)
@@ -200,9 +243,17 @@ class BasicQueryEngine:
             citing = self.getEntityById(row["citing"], False)
             cited = self.getEntityById(row["cited"], False)
             if row["author_sc"]:
-                citation = AuthorSelfCitation(ids, row["creation"], row["timespan"], citing, cited)
+                citation = AuthorSelfCitation(identifiers=ids,
+                                              creation=row["creation"],
+                                              timespan=row["timespan"],
+                                              citing_entity=citing,
+                                              cited_entity=cited)
             elif row["journal_sc"]:
-                citation = JournalSelfCitation(ids, row["creation"], row["timespan"], citing, cited)
+                citation = JournalSelfCitation(identifiers=ids,
+                                               creation=row["creation"],
+                                               timespan=row["timespan"],
+                                               citing_entity=citing,
+                                               cited_entity=cited)
             else:
                 citation = Citation(ids, row["creation"], row["timespan"], citing, cited)
             citations.append(citation)
@@ -238,7 +289,6 @@ class BasicQueryEngine:
                 ))
         return result
 
-    
     def getBibliographicEntitiesWithAuthor(self, author: str) -> list[BibliographicEntity]:
         result = []
         for bib_qh in self.bibliographicEntityQuery:
