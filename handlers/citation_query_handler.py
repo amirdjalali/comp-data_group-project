@@ -207,8 +207,6 @@ class CitationQueryHandler(QueryHandler):
         start_date = self._validate(start_date)
         end_date = self._validate(end_date)
 
-        print(start_date, end_date)
-
         if start_date:
             start_date_parts = start_date.split("-")
 
@@ -216,8 +214,6 @@ class CitationQueryHandler(QueryHandler):
                 start_date = f"{start_date}-01"
             elif len(start_date_parts) == 1:
                 start_date = f"{start_date}-01-01"
-
-            print(f"start date is {start_date}")
 
             filters += f"    FILTER (?creation >= \"{start_date}\")\n"
 
@@ -229,8 +225,6 @@ class CitationQueryHandler(QueryHandler):
                 end_date = f"{end_date}-28"
             elif len(end_date_parts) == 1:
                 end_date = f"{end_date}-12-31"
-
-            print(f"end date is {end_date}")
 
             filters += f"    FILTER (?creation <= \"{end_date}\")\n"
             
