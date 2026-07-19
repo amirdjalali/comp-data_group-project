@@ -378,11 +378,22 @@ class TestDeep(unittest.TestCase):
 
         r = fq.getCitationsOfBibEntityByTitleWithinDate("Machine Learning", "2005", "2015")
         self.assertIsInstance(r, list)
-        for i in range(len(r)):
-            self.assertIsInstance(r[i], Citation)
-            self.assertIn("Machine Learning", r[i].getCitedEntity().getTitle())
-            self.assertGreaterEqual(r[i].getCreation(), "2005")
-            self.assertLessEqual(r[i].getCreation(), "2015-12-31")
+
+        for citation in r:
+            self.assertIsInstance(citation, Citation)
+            
+            # 1. Recuperiamo l'entità citata e verifichiamo SUBITO che esista
+            cited_entity = citation.getCitedEntity()
+            self.assertIsNotNone(cited_entity, f"Errore: la citazione {citation.getIds()} punta a un'entità None")
+            
+            # 2. Ora che siamo sicuri che esiste, controlliamo il titolo
+            self.assertIn("Machine Learning", cited_entity.getTitle())
+            
+            # 3. Verifichiamo ENTRAMBI i limiti della data di PUBBLICAZIONE del libro
+            # Controllo limite minimo (>= 2005)
+            self.assertGreaterEqual(cited_entity.getPublicationDate(), "2005")
+            # Controllo limite massimo (<= 2015)
+            self.assertLessEqual(cited_entity.getPublicationDate(), "2015-12-31")
 
         r = fq.getCitationsOfBibEntityByTitleWithinDate("Machine Learning", "2005", "")
         self.assertIsInstance(r, list)
@@ -393,10 +404,21 @@ class TestDeep(unittest.TestCase):
 
         r = fq.getCitationsOfBibEntityByTitleWithinDate("Machine Learning", "", "2015")
         self.assertIsInstance(r, list)
-        for i in range(len(r)):
-            self.assertIsInstance(r[i], Citation)
-            self.assertIn("Machine Learning", r[i].getCitedEntity().getTitle())
-            self.assertLessEqual(r[i].getCreation(), "2015-12-31")
+        for citation in r:
+            self.assertIsInstance(citation, Citation)
+            
+            # 1. Recuperiamo l'entità citata e verifichiamo SUBITO che esista
+            cited_entity = citation.getCitedEntity()
+            self.assertIsNotNone(cited_entity, f"Errore: la citazione {citation.getIds()} punta a un'entità None")
+            
+            # 2. Ora che siamo sicuri che esiste, controlliamo il titolo
+            self.assertIn("Machine Learning", cited_entity.getTitle())
+            
+            # 3. Verifichiamo ENTRAMBI i limiti della data di PUBBLICAZIONE del libro
+            # Controllo limite minimo (>= 2005)
+            self.assertGreaterEqual(cited_entity.getPublicationDate(), "2005")
+            # Controllo limite massimo (<= 2015)
+            self.assertLessEqual(cited_entity.getPublicationDate(), "2015-12-31")
 
         r = fq.getReferencesOfBibEntityByTitleWithinTimespan("Library", "P2Y", "P15Y")
         self.assertIsInstance(r, list)
