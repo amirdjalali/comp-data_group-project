@@ -14,7 +14,6 @@ class FullQueryEngine(BasicQueryEngine):
         all_author_self_citations = self.getAllAuthorSelfCitations()
         author_bib_entities = self.getBibliographicEntitiesWithAuthor(author_name)
 
-        #creating a dictionary to map the IDs to their respective full bibliographic entities
         entities_dict = dict()
 
         #loop through the bibliographic entities associated with the author and add their IDs to the dictionary with the corresponding BibliographicEntity object as the value
@@ -54,20 +53,26 @@ class FullQueryEngine(BasicQueryEngine):
 
     def getJournalSelfCitationsByName(self, journal_name: str) -> list[JournalSelfCitation]:
 
+        #create a list to store the journal self-citations
         journal_self_citations = []
 
+        #create variables to store the list of all the journal self-citations and the bibliographic entities published by the same venue
         all_journal_self_citations = self.getAllJournalSelfCitations()
         journal_bib_entities = self.getBibliographicEntitiesWithVenue(journal_name)
 
+        
         entities_dict = dict()
 
+        #loop through the bibliographic entities associated with the venue and add their IDs to the dictionary with the corresponding BibliographicEntity object as the value
         for journal_entity in journal_bib_entities:
             for id in journal_entity.getIds():
                 entities_dict[id] = journal_entity
 
+        #if the venue has no bibliographic entities associated with it, return an empty list
         if not entities_dict:
             return []
         
+        #loop through the list of all the journal self-citations and check if both citing and cited entities belong to the same venue (i.e. are stored inside of the dictionary of the BEs filtered by venue). If so, then append to the list "journal_self_citations"
         for citation in all_journal_self_citations:
            
             citing_entity = citation.getCitingEntity()
@@ -89,54 +94,63 @@ class FullQueryEngine(BasicQueryEngine):
 
         return journal_self_citations
     
+
     def getCitationsOfBibEntityByTitleWithinDate(self, bib_entity_title: str, min_date: str, max_date: str) -> list[Citation]:
+
+        #create a list to store the citations of BEs filtered by title and by creation of said citation
         citations_of_bib_entity_within_date = []
 
+        #create variables to store the list of all the matching BEs's title and the citations created within the min and max date
         bib_entities_with_title = self.getBibliographicEntitiesWithTitle(bib_entity_title)
-        bib_entities_within_date = self.getBibliographicEntitiesWithinPublicationDate(min_date, max_date)
+        citations_within_date = self.getCitationsWithinDate(min_date, max_date)
 
-        ids_within_date = set()
-        for entity in bib_entities_within_date:
-            for entity_id in entity.getIds():
-                ids_within_date.add(entity_id)
+        #creating a set and adding all of the ids of each BE
+        entities_id_set = set()
 
-        entities_dict = dict()
         for entity in bib_entities_with_title:
-            for entity_id in entity.getIds():
-                if entity_id in ids_within_date:
-                    entities_dict[entity_id] = entity
+            entities_id_set.update(entity.getIds())
 
-        if not entities_dict:
+        #if the set is empty, return an empty list
+        if not entities_id_set:
             return []
+        
+        #looping through the citations filtered by date
+        for citation in citations_within_date:
 
-        all_citations = self.getAllCitations()
-        for citation in all_citations:
             cited_entity = citation.getCitedEntity()
 
-            if cited_entity:
+            #checking if the citation has a BE object as cited entity in case of some missing data
+            if cited_entity is not None:
+
+                #setting to False the matching of the ID, looping through the ids of the cited entity and appending it to the result list if al least one of them is present in the set
+                has_matching_id = False
+
                 for cited_id in cited_entity.getIds():
-                    if cited_id in entities_dict:
-                        citations_of_bib_entity_within_date.append(citation)
+                    if cited_id in entities_id_set:
+                        has_matching_id = True
+                
+                if has_matching_id:
+                    citations_of_bib_entity_within_date.append(citation)
 
         return citations_of_bib_entity_within_date
         
     
     def getReferencesOfBibEntityByTitleWithinTimespan(self, bib_entity_title: str, min_timespan: str, max_timespan: str) -> list[Citation]:
+        #create a list to store the citations of BEs filtered by title and by creation of said citation
         references_of_bib_entity_within_timespan = []
 
+        #create variables to store the list of all the citations within the input timespan and the bibliographic entities which match or contain the input title in their title
         citations_within_timespan = self.getCitationsWithinTimespan(min_timespan,max_timespan)
         bib_entities_with_title = self.getBibliographicEntitiesWithTitle(bib_entity_title)
 
+        #creating a list and looping through the list of the BEs for storing their titles
         title_of_entities_list = []
 
         for bib_entity in bib_entities_with_title:
             title_of_entities_list.append(bib_entity.getTitle())
 
-        print(title_of_entities_list)
-        print(len(citations_within_timespan))
-
+        #looping through the citations filtered by timespan and checking if the citing entity's title is inside the list of BEs title. If so, then append to the result list
         for citation in citations_within_timespan:
-            print(citation.getCitingEntity().getTitle())
             if citation.getCitingEntity().getTitle() in title_of_entities_list:
                 references_of_bib_entity_within_timespan.append(citation)
             
@@ -166,11 +180,11 @@ class FullQueryEngine(BasicQueryEngine):
         #res = que.getAuthorSelfCitationsByNam("Dan")
         #res = que.getAuthorSelfCitationsByName("Bostenaru")
         
-        res = que.getJournalSelfCitationsByName("Digital Scholarship In The Humanities")
+        #res = que.getJournalSelfCitationsByName("Digital Scholarship In The Humanities")
 
-        #res = que.getCitationsOfBibEntityByTitleWithinDate("sick", "", "")
+        res = que.getCitationsOfBibEntityByTitleWithinDate("sick", "2016", "2018")
 
-        res = que.getReferencesOfBibEntityByTitleWithinTimespan("Beyond The One-Shot", "P1Y", "P4Y")
+        #res = que.getReferencesOfBibEntityByTitleWithinTimespan("Beyond The One-Shot", "P1Y", "P4Y")
 
         #res1 = que.getCitationsOfBibEntityByTitleWithinDate("Teaching, Learning And Research In Final Year Humanities Computing Student Projects","2003", "2006")
         #res2 = que.getCitationsOfBibEntityByTitleWithinDat("Tree, Turf, Centre, Archipelago—or Wild Acre?  Metaphors And Stories For Humanities Computing121 For Sinéad O'Sullivan.2 This Essay Was Originally Delivered As A Plenary Address At ‘Computing Arts 2004’, Centre For Literary And Linguistic Computing, University Of Newcastle, NSW Australia, Www.Newcastle.Edu.Au/Centre/Cllc/Ca2004/. My Thanks To The Organizer, Professor Hugh Craig, For His Many Kindnesses And Patience, To The Anonymous Reviewers Who Stimulated Me To Improve The First Attempt And To John Burrows For Advice On The Connotations Of Words. All URLs Have Been Verified As Of 29 July 2005.","2004", "2006")

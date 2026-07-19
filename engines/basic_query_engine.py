@@ -229,6 +229,7 @@ class BasicQueryEngine:
         handlers = self.getCitationHandlers()
         dataframes: list[pd.DataFrame]  = []
         for handler in handlers:
+            
             new_df = handler.getCitationsWithinDate(start_date, end_date)
             dataframes.append(new_df)
 
@@ -350,17 +351,18 @@ if __name__ == "__main__":
     #res = que.getEntityById("omid:br/06380128276")
     #print(res.__dict__)
 
-    res = que.getAllCitations()
+    #res = que.getAllCitations()
     
-    for i in res:
-        tipo1 = type(i.getCitingEntity())
-        tipo2 = type(i.getCitedEntity())
-        if "<class 'model.bibliographic_entity.BibliographicEntity'>" not in str(tipo1):
-            print(f"Questa citing {i.__dict__} è None")
-        elif "<class 'model.bibliographic_entity.BibliographicEntity'>" not in str(tipo2):
-            print(f"Questa cited {i.__dict__} è None")
+    #for i in res:
+    #    tipo1 = type(i.getCitingEntity())
+    #    tipo2 = type(i.getCitedEntity())
+    #    if "<class 'model.bibliographic_entity.BibliographicEntity'>" not in str(tipo1):
+    #        print(f"Questa citing {i.__dict__} è None")
+    #    elif "<class 'model.bibliographic_entity.BibliographicEntity'>" not in str(tipo2):
+    #        print(f"Questa cited {i.__dict__} è None")
     
-    #que.getCitationsWithinDate()
+    res = que.getCitationsWithinDate("2016", "2018")
+    print(len(res))
 
 
         

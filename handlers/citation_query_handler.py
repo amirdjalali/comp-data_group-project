@@ -213,7 +213,7 @@ class CitationQueryHandler(QueryHandler):
             elif len(start_date_parts) == 1:
                 start_date = f"{start_date}-01-01"
 
-            filters += f"    FILTER (?creation >= \"{start_date}\")\n"
+            filters += f"    FILTER (STR(?creation) >= \"{start_date}\")\n"
 
         if end_date:
 
@@ -224,7 +224,7 @@ class CitationQueryHandler(QueryHandler):
             elif len(end_date_parts) == 1:
                 end_date = f"{end_date}-12-31"
 
-            filters += f"    FILTER (?creation <= \"{end_date}\")\n"
+            filters += f"    FILTER (STR(?creation) <= \"{end_date}\")\n"
             
     
         # first connect to db
