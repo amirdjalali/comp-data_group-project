@@ -302,7 +302,7 @@ class BasicQueryEngine:
                 ))
         return result
     
-    def getBibliographicEntitiesWithinPublicationDate(self, start_date: str, end_date: str) -> list[BibliographicEntity]:
+    def getBibliographicEntitiesWithinPublicationDate(self, start_date: str = None, end_date: str = None) -> list[BibliographicEntity]:
         result = []
         for bib_qh in self.bibliographicEntityQuery:
             df = bib_qh.getBibliographicEntitiesWithinPublicationDate(start_date, end_date) # calls query handler's getAllBibiliographicEntitiesWithinPublicationDate method
