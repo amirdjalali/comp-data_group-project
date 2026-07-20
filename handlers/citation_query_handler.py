@@ -59,21 +59,21 @@ class CitationQueryHandler(QueryHandler):
 
         endpoint = self.getDbPathOrUrl()
 
-        query = f"""
+        query = """
                 PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                 PREFIX cito: <http://purl.org/spar/cito/>
 
                 SELECT ?oci ?citing ?cited ?creation ?timespan ?journal_sc ?author_sc
-                WHERE {{
+                WHERE {
                     ?oci a cito:Citation .
                     ?oci cito:hasCitingEntity ?citing .
                     ?oci cito:hasCitedEntity ?cited .
                     ?oci cito:hasCitationCreationDate ?creation .
                     ?oci cito:hasCitationTimeSpan ?timespan .
 
-                    BIND(IF(EXISTS {{ ?oci a cito:JournalSelfCitation }}, "True", "False") AS ?journal_sc)
-                    BIND(IF(EXISTS {{ ?oci a cito:AuthorSelfCitation }}, "True", "False") AS ?author_sc)
-                }}
+                    BIND(IF(EXISTS { ?oci a cito:JournalSelfCitation }, "True", "False") AS ?journal_sc)
+                    BIND(IF(EXISTS { ?oci a cito:AuthorSelfCitation }, "True", "False") AS ?author_sc)
+                }
             """
         
         df_sparql = get(endpoint, query, True)
@@ -88,7 +88,6 @@ class CitationQueryHandler(QueryHandler):
         # the query also checks if the author self citation is also a journal self citation
         query = """
                 PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-                PREFIX schema: <https://schema.org/>
                 PREFIX cito: <http://purl.org/spar/cito/>
 
                 SELECT ?oci ?citing ?cited ?creation ?timespan ?journal_sc
@@ -116,7 +115,6 @@ class CitationQueryHandler(QueryHandler):
         # the query also checks if the journal self citation is also an author self citation
         query = """
                 PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-                PREFIX schema: <https://schema.org/>
                 PREFIX cito: <http://purl.org/spar/cito/>
 
                 SELECT ?oci ?citing ?cited ?creation ?timespan ?author_sc
@@ -160,7 +158,6 @@ class CitationQueryHandler(QueryHandler):
         # query the graph and get everything that has a timeframe         
         query = """
             PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-            PREFIX schema: <https://schema.org/>
             PREFIX cito: <http://purl.org/spar/cito/>
             PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
 
@@ -233,7 +230,6 @@ class CitationQueryHandler(QueryHandler):
         # query the graph.            
         query = """
             PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-            PREFIX schema: <https://schema.org/>
             PREFIX cito: <http://purl.org/spar/cito/>
             PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
 
@@ -330,8 +326,11 @@ if __name__ == "__main__":
     # print(df_all_journal_sc)
 
     df_citations_within_dates = handler.getCitationsWithinDate("2020-99")
-    print(df_citations_within_dates.dtypes)
-    print(df_citations_within_dates)
+    #print(df_citations_within_dates.dtypes)
+    #print(df_citations_within_dates)
+
+    df_get_by_id = handler.getById("0603927919-0603927914")
+    print(df_get_by_id)
 
     #df_citations_within_timespans = handler.getCitationsWithinTimespan("-99Y", "0")
     #print(df_citations_within_timespans.dtypes)
