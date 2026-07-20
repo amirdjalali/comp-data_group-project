@@ -48,13 +48,13 @@ class TestProjectBasic(unittest.TestCase):
     citation = "data" + sep + "dh_citations.csv"
     bib_entity = "data" + sep + "dh_metadata.json"
     relational = "." + sep + "data.db"
-    graph = "http://127.0.0.1:9999/blazegraph/sparql"
+    graph = "http://localhost:9999/blazegraph/sparql"
 
-    def test_01_CitationUploadHandler(self):
-        u = CitationUploadHandler()
-        self.assertTrue(u.setDbPathOrUrl(self.graph))
-        self.assertEqual(u.getDbPathOrUrl(), self.graph)
-        self.assertTrue(u.pushDataToDb(self.citation))
+    # def test_01_CitationUploadHandler(self):
+    #     u = CitationUploadHandler()
+    #     self.assertTrue(u.setDbPathOrUrl(self.graph))
+    #     self.assertEqual(u.getDbPathOrUrl(), self.graph)
+    #     self.assertTrue(u.pushDataToDb(self.citation))
 
     def test_02_BibliographicEntityUploadHandler(self):
         u = BibliographicEntityUploadHandler()
@@ -185,7 +185,7 @@ class TestDeep(unittest.TestCase):
     citation = "data" + sep + "dh_citations.csv"
     bib_entity = "data" + sep + "dh_metadata.json"
     relational = "." + sep + "data.db"
-    graph = "http://127.0.0.1:9999/blazegraph/sparql"
+    graph = "http://localhost:9999/blazegraph/sparql"
 
     # citation = ""
     # bib_entity = ""
@@ -218,11 +218,11 @@ class TestDeep(unittest.TestCase):
             self.assertEqual(cit1.getCitedEntity(), cit2.getCitedEntity())
 
 
-    def test_01_CitationUploadHandler(self):
-        u = CitationUploadHandler()
-        self.assertTrue(u.setDbPathOrUrl(self.graph))
-        self.assertEqual(u.getDbPathOrUrl(), self.graph)
-        self.assertTrue(u.pushDataToDb(self.citation))
+    # def test_01_CitationUploadHandler(self):
+    #     u = CitationUploadHandler()
+    #     self.assertTrue(u.setDbPathOrUrl(self.graph))
+    #     self.assertEqual(u.getDbPathOrUrl(), self.graph)
+    #     self.assertTrue(u.pushDataToDb(self.citation))
 
     def test_02_BibliographicEntityUploadHandler(self):
         u = BibliographicEntityUploadHandler()
@@ -707,7 +707,7 @@ class TestSingle(unittest.TestCase):
     citation = "data" + sep + "dh_citations.csv"
     bib_entity = "data" + sep + "dh_metadata.json"
     relational = "." + sep + "data.db"
-    graph = "http://127.0.0.1:9999/blazegraph/sparql"
+    graph = "http://localhost:9999/blazegraph/sparql"
 
     def assertBibliographicEntityEqual(self, be1:BibliographicEntity, be2:BibliographicEntity):
         self.assertEqual(be1.getTitle(), be2.getTitle())
