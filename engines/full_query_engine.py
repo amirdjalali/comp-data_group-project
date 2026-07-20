@@ -14,39 +14,36 @@ class FullQueryEngine(BasicQueryEngine):
         all_author_self_citations = self.getAllAuthorSelfCitations()
         author_bib_entities = self.getBibliographicEntitiesWithAuthor(author_name)
 
-        entities_dict = dict()
+        entities_set = set()
 
-        #loop through the bibliographic entities associated with the author and add their IDs to the dictionary with the corresponding BibliographicEntity object as the value
-        for author_entity in author_bib_entities:
-            
-            for id in author_entity.getIds():
-                entities_dict[id] = author_entity
+        #loop through the bibliographic entities associated with the author and add their IDs to the set 
+        for author_entity in author_bib_entities:   
+            entities_set.update(author_entity.getIds())
         
         #if the author has no bibliographic entities associated with them, return an empty list
-        if not entities_dict:
+        if not entities_set:
             return []
     
-
-        #loop through the list of all the author self-citations and check if both citing and cited entities belong to the author. If so, then append to the list "author_self_citations"
+        #loop through the list of all the author self-citations and check if both citing and cited entities belong to the  (i.e. if both citing and cited entity's id is in the set). If so, then append to the list "author_self_citations"
         for citation in all_author_self_citations:
             
             citing_entity = citation.getCitingEntity()
             cited_entity = citation.getCitedEntity()
 
-            has_citing_entity = False
-            has_cited_entity = False
+            if citing_entity is not None and cited_entity is not None:
+                has_citing_entity = False
+                has_cited_entity = False
 
-            for id in citing_entity.getIds():
-                if id in entities_dict:
-                    has_citing_entity = True
-                    
-
-            for id in cited_entity.getIds():
-                if id in entities_dict:
-                    has_cited_entity = True
-                    
-            if has_citing_entity and has_cited_entity:
-                author_self_citations.append(citation)
+                for id in citing_entity.getIds():
+                    if id in entities_set:
+                        has_citing_entity = True
+                        
+                for id in cited_entity.getIds():
+                    if id in entities_set:
+                        has_cited_entity = True
+                        
+                if has_citing_entity and has_cited_entity:
+                    author_self_citations.append(citation)
 
         return author_self_citations
     
@@ -60,37 +57,36 @@ class FullQueryEngine(BasicQueryEngine):
         all_journal_self_citations = self.getAllJournalSelfCitations()
         journal_bib_entities = self.getBibliographicEntitiesWithVenue(journal_name)
 
-        
-        entities_dict = dict()
+        entities_set = set()
 
-        #loop through the bibliographic entities associated with the venue and add their IDs to the dictionary with the corresponding BibliographicEntity object as the value
+        #loop through the bibliographic entities associated with the venue and add their IDs to the set
         for journal_entity in journal_bib_entities:
-            for id in journal_entity.getIds():
-                entities_dict[id] = journal_entity
+            entities_set.update(journal_entity.getIds())
 
         #if the venue has no bibliographic entities associated with it, return an empty list
-        if not entities_dict:
+        if not entities_set:
             return []
         
-        #loop through the list of all the journal self-citations and check if both citing and cited entities belong to the same venue (i.e. are stored inside of the dictionary of the BEs filtered by venue). If so, then append to the list "journal_self_citations"
+        #loop through the list of all the journal self-citations and check if both citing and cited entities belong to the same venue (i.e. are stored inside of the set containing the BEs' IDs filtered by venue). If so, then append to the list "journal_self_citations"
         for citation in all_journal_self_citations:
            
             citing_entity = citation.getCitingEntity()
             cited_entity = citation.getCitedEntity()
 
-            has_citing = False
-            has_cited = False
+            if citing_entity is not None and cited_entity is not None:
+                has_citing = False
+                has_cited = False
 
-            for id in citing_entity.getIds():
-                if id in entities_dict:
-                    has_citing = True
+                for id in citing_entity.getIds():
+                    if id in entities_set:
+                        has_citing = True
 
-            for id in cited_entity.getIds():
-                if id in entities_dict:
-                    has_cited = True
+                for id in cited_entity.getIds():
+                    if id in entities_set:
+                        has_cited = True
 
-            if has_citing and has_cited:
-                journal_self_citations.append(citation)
+                if has_citing and has_cited:
+                    journal_self_citations.append(citation)
 
         return journal_self_citations
     
@@ -143,16 +139,28 @@ class FullQueryEngine(BasicQueryEngine):
         citations_within_timespan = self.getCitationsWithinTimespan(min_timespan,max_timespan)
         bib_entities_with_title = self.getBibliographicEntitiesWithTitle(bib_entity_title)
 
-        #creating a list and looping through the list of the BEs for storing their titles
-        title_of_entities_list = []
+        #creating a set and looping through the list of the BEs for storing their titles in the set
+        entities_set = set()
 
         for bib_entity in bib_entities_with_title:
-            title_of_entities_list.append(bib_entity.getTitle())
+            entities_set.update(bib_entity.getIds())
 
-        #looping through the citations filtered by timespan and checking if the citing entity's title is inside the list of BEs title. If so, then append to the result list
+        #looping through the citations filtered by timespan and checking if the citing entity's id is inside the set of BEs id with matching title. If so, then append to the result list
         for citation in citations_within_timespan:
-            if citation.getCitingEntity().getTitle() in title_of_entities_list:
-                references_of_bib_entity_within_timespan.append(citation)
+            
+            citing_entity = citation.getCitingEntity()
+
+            if citing_entity is not None:
+
+                has_matching_id = False
+
+                for citation_id in citing_entity.getIds():
+
+                    if citation_id in entities_set:
+                        has_matching_id = True
+
+                if has_matching_id:
+                    references_of_bib_entity_within_timespan.append(citation)
             
         return references_of_bib_entity_within_timespan
 
