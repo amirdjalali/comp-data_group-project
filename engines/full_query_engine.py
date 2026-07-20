@@ -24,7 +24,7 @@ class FullQueryEngine(BasicQueryEngine):
         if not entities_set:
             return []
     
-        #loop through the list of all the author self-citations and check if both citing and cited entities belong to the  (i.e. if both citing and cited entity's id is in the set). If so, then append to the list "author_self_citations"
+        #loop through the list of all the author self-citations and check if both citing and cited entities belong to the same author (i.e. if both citing and cited entity's id is in the set). If so, then append to the list "author_self_citations"
         for citation in all_author_self_citations:
             
             citing_entity = citation.getCitingEntity()
@@ -147,7 +147,7 @@ class FullQueryEngine(BasicQueryEngine):
 
         #looping through the citations filtered by timespan and checking if the citing entity's id is inside the set of BEs id with matching title. If so, then append to the result list
         for citation in citations_within_timespan:
-            
+
             citing_entity = citation.getCitingEntity()
 
             if citing_entity is not None:
