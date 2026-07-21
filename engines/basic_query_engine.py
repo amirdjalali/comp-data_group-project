@@ -357,39 +357,5 @@ class BasicQueryEngine:
                 ))
         return result
 
-if __name__ == "__main__":
-    cit_qh = CitationQueryHandler()
-    cit_qh.setDbPathOrUrl("http://localhost:9999/blazegraph/sparql")
-    bib_qh = BibliographicEntityQueryHandler()
-    bib_qh.setDbPathOrUrl("relational.db")
-    que = BasicQueryEngine()
-    que.addCitationHandler(cit_qh)
-    que.addBibliographicEntityHandler(bib_qh)
-    #print(que.bibliographicEntityQuery)
-    #print(que.citationQuery)
-    que.getAllCitations()
-
-    #print(que.getEntityById("06380128276-0670606001").__dict__)
-
-        #que.getAllAuthorSelfCitations()
-    #que.getAllJournalSelfCitations()
-    #res = que.getCitationsWithinTimespan("P1Y", "P4Y")
-    #print(len(res))
-    #res = que.getEntityById("omid:br/06380128276")
-    #print(res.__dict__)
-
-    #res = que.getAllCitations()
-    
-    #for i in res:
-    #    tipo1 = type(i.getCitingEntity())
-    #    tipo2 = type(i.getCitedEntity())
-    #    if "<class 'model.bibliographic_entity.BibliographicEntity'>" not in str(tipo1):
-    #        print(f"Questa citing {i.__dict__} è None")
-    #    elif "<class 'model.bibliographic_entity.BibliographicEntity'>" not in str(tipo2):
-    #        print(f"Questa cited {i.__dict__} è None")
-    
-    res = que.getCitationsWithinDate("2016", "2018")
-    print(len(res))
-
 
         

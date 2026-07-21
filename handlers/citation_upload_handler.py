@@ -90,39 +90,3 @@ class CitationUploadHandler(UploadHandler):
         print(f"Check them here: {endpoint}")
 
         return True
-    
-    # Use this method to parse dates. YYYY dates are converted in YYYY-01-01 and
-    # YYYY-MM dates are converted in YYYY-MM-01 for comparison
-
-    # @staticmethod
-    # def parse_dates(date_string: str) -> Literal:
- 
-    #     if not date_string or date_string == "":
-    #         return None
-        
-    #     # Splits the date with character "-" and counts how many parts are there
-    #     # Three parts: date is complete
-    #     # Two parts: add first day of the month
-    #     # One part: add january first
-
-    #     date_parts = date_string.split("-")
-        
-    #     if len(date_parts) == 1:
-    #         return Literal(f"{date_string}-01-01", datatype=XSD.date)
-    #     elif len(date_parts) == 2:
-    #         return Literal(f"{date_string}-01", datatype=XSD.date)
-    #     elif len(date_parts) == 3:
-    #         return Literal(date_string, datatype=XSD.date)
-        
-    #     return None # just in case dates are not formatted properly
-
-# To upload citations directly from this file
-
-if __name__ == "__main__":
-
-    # You need to create a handler object first, and then call the method upon it
-    handler = CitationUploadHandler()
-    handler.setDbPathOrUrl("http://localhost:9999/blazegraph/sparql")
-    handler.pushDataToDb()
-
-    
