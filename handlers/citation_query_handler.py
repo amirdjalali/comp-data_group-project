@@ -2,7 +2,6 @@ from .query_handler import QueryHandler
 import pandas as pd
 from sparql_dataframe import get
 import re # regular expressions to validate dates and timespans
-from pandas import read_csv, Series
 
 
 class CitationQueryHandler(QueryHandler):
@@ -15,7 +14,6 @@ class CitationQueryHandler(QueryHandler):
         clean_id = id.split("/")[-1]
 
         oci = "https://w3id.org/oc/index/ci/" + clean_id
-        #try to understand if we need to check whether the id needs to be checked or not from citation_upload_handler.py (maybe not, since the upload handler already checks that the OCIs are in the correct format, but maybe we can add this check just to be sure)
     
         query = f"""
                 PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -101,7 +99,7 @@ class CitationQueryHandler(QueryHandler):
                     BIND(IF(EXISTS { ?oci a cito:JournalSelfCitation }, "True", "False") AS ?journal_sc)
                 }
         """
-        # transform the tripes into a dataframe with the following columns: oci,citing,cited,creation,timespan,journal_sc
+        # transform the triples into a dataframe with the following columns: oci,citing,cited,creation,timespan,journal_sc
         df_sparql = get(endpoint, query, True)
        
         return df_sparql
@@ -127,7 +125,7 @@ class CitationQueryHandler(QueryHandler):
                     BIND(IF(EXISTS { ?oci a cito:AuthorSelfCitation }, "True", "False") AS ?author_sc)
                 }
         """
-        # transform the tripes into a dataframe with the following columns: oci,citing,cited,creation,timespan,journal_sc
+        # transform the triples into a dataframe with the following columns: oci,citing,cited,creation,timespan,author_sc
         df_sparql = get(endpoint, query, True)
 
         return df_sparql
@@ -325,12 +323,12 @@ if __name__ == "__main__":
     # print(df_all_journal_sc.dtypes)
     # print(df_all_journal_sc)
 
-    df_citations_within_dates = handler.getCitationsWithinDate("2020-99")
+    #df_citations_within_dates = handler.getCitationsWithinDate("2020-99")
     #print(df_citations_within_dates.dtypes)
     #print(df_citations_within_dates)
 
-    df_get_by_id = handler.getById("0603927919-0603927914")
-    print(df_get_by_id)
+    #df_get_by_id = handler.getById("0603927919-0603927914")
+    #print(df_get_by_id)
 
     #df_citations_within_timespans = handler.getCitationsWithinTimespan("-99Y", "0")
     #print(df_citations_within_timespans.dtypes)

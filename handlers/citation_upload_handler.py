@@ -1,6 +1,6 @@
 from .upload_handler import UploadHandler
 from rdflib import Graph, Namespace, Literal, URIRef, RDF, XSD
-from pandas import read_csv, Series
+from pandas import read_csv
 from rdflib.plugins.stores.sparqlstore import SPARQLUpdateStore
 
 class CitationUploadHandler(UploadHandler):
@@ -124,3 +124,5 @@ if __name__ == "__main__":
     handler = CitationUploadHandler()
     handler.setDbPathOrUrl("http://localhost:9999/blazegraph/sparql")
     handler.pushDataToDb()
+
+    
