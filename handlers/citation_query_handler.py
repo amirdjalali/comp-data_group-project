@@ -7,14 +7,16 @@ import re # regular expressions to validate dates and timespans
 class CitationQueryHandler(QueryHandler):
 
     def getById(self, id: str) -> pd.DataFrame:
-    
+        
+        #connecting to the db
         endpoint = self.getDbPathOrUrl()
 
         #if the user provides the full url, in case there are errors in the input, we can extract the clean id from the url and use it to query the database
         clean_id = id.split("/")[-1]
 
         oci = "https://w3id.org/oc/index/ci/" + clean_id
-    
+
+        #querying the graph
         query = f"""
                 PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                 PREFIX cito: <http://purl.org/spar/cito/>
@@ -45,8 +47,8 @@ class CitationQueryHandler(QueryHandler):
         # So, EXISTS { ?oci a cito:JournalSelfCitation } means
         # if ?oci is a journal self citation, it retursn true, otherwise it returns false
 
-        # IF assings the value "True" in case the EXISTS condition is true
-        # otherwise, it assignes "False"
+        # IF assigns the value "True" in case the EXISTS condition is true
+        # otherwise, it assigns "False"
 
         # BIND saves the result as ?journal_sc
     
@@ -55,8 +57,10 @@ class CitationQueryHandler(QueryHandler):
 
     def getAllCitations(self) -> pd.DataFrame:
 
+        #connecting to the db
         endpoint = self.getDbPathOrUrl()
 
+        #query the graph for all citations and check for author and journal self-citations
         query = """
                 PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                 PREFIX cito: <http://purl.org/spar/cito/>
@@ -73,7 +77,7 @@ class CitationQueryHandler(QueryHandler):
                     BIND(IF(EXISTS { ?oci a cito:AuthorSelfCitation }, "True", "False") AS ?author_sc)
                 }
             """
-        
+        #taking the SPARQL query and converting its result in a DataFrame
         df_sparql = get(endpoint, query, True)
         return df_sparql
     
@@ -82,8 +86,7 @@ class CitationQueryHandler(QueryHandler):
         # first connect to db
         endpoint = self.getDbPathOrUrl()
 
-        # query the graph. Should i get also author_sc: true or false?
-        # the query also checks if the author self citation is also a journal self citation
+        # query the graph. The query also checks if the author self citation is also a journal self citation
         query = """
                 PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                 PREFIX cito: <http://purl.org/spar/cito/>
@@ -107,7 +110,7 @@ class CitationQueryHandler(QueryHandler):
     def getAllJournalSelfCitations(self) -> pd.DataFrame:
     
         # first connect to db
-        endpoint = "http://localhost:9999/blazegraph/sparql"
+        endpoint = self.getDbPathOrUrl()
 
         # query the graph. Should i get also author_sc: true or false?
         # the query also checks if the journal self citation is also an author self citation
@@ -151,7 +154,7 @@ class CitationQueryHandler(QueryHandler):
         max_timespan_days = self.duration_to_days(max_timespan)
     
         # first connect to db
-        endpoint = "http://localhost:9999/blazegraph/sparql"
+        endpoint = self.getDbPathOrUrl()
 
         # query the graph and get everything that has a timeframe         
         query = """
@@ -223,7 +226,7 @@ class CitationQueryHandler(QueryHandler):
             
     
         # first connect to db
-        endpoint = "http://localhost:9999/blazegraph/sparql"
+        endpoint = self.getDbPathOrUrl()
 
         # query the graph.            
         query = """
@@ -245,7 +248,6 @@ class CitationQueryHandler(QueryHandler):
         """
 
         query = query + filters + "\n}\nORDER BY ?creation"
-        #print(query)
 
         # transform the tripes into a dataframe with the following columns: oci,citing,cited,creation,timespan,journal_sc
         df_sparql = get(endpoint, query, True)
@@ -318,6 +320,7 @@ if __name__ == "__main__":
     # df_all_author_sc = handler.getAllAuthorSelfCitations()
     # print(df_all_author_sc.dtypes)
     # print(df_all_author_sc)
+    print(len(handler.getAllJournalSelfCitations()))
 
     # df_all_journal_sc = handler.getAllJournalSelfCitations()
     # print(df_all_journal_sc.dtypes)

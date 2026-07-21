@@ -190,8 +190,8 @@ class FullQueryEngine(BasicQueryEngine):
         
         #res = que.getJournalSelfCitationsByName("Digital Scholarship In The Humanities")
 
-        res = que.getCitationsOfBibEntityByTitleWithinDate("sick", "2016", "2018")
-
+        #res = que.getCitationsOfBibEntityByTitleWithinDate("sick", "2016", "2018")
+        res = que.getAllCitations()
         #res = que.getReferencesOfBibEntityByTitleWithinTimespan("Beyond The One-Shot", "P1Y", "P4Y")
 
         #res1 = que.getCitationsOfBibEntityByTitleWithinDate("Teaching, Learning And Research In Final Year Humanities Computing Student Projects","2003", "2006")
@@ -206,9 +206,16 @@ class FullQueryEngine(BasicQueryEngine):
         print(len(res))
         #print(len(res2))
         
-        print("PRIMO RISULTATO")
+        #print("PRIMO RISULTATO")
+        dict = dict()
         for i in res:
-            print(i.__dict__)
+            for id in i.getIds():
+                if id not in dict:
+                    dict[id] = i
+                else:
+                    print(f"Questa citation appare più volte {i.__dict__}")
+
+
         #print("SECONDO RISULTATO")
         #for i in res2:
         #    print(i.__dict__)
