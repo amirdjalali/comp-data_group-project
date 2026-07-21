@@ -4,7 +4,7 @@ from .query_handler import QueryHandler
 
 class BibliographicEntityQueryHandler(QueryHandler):
 
-    def _buildQuery(self, where_clause="", params=None): # private/protected method; where_clause and params are optional -> default to "" and None
+    def _buildQuery(self, where_clause="", params=None): # protected method; where_clause and params are optional -> default to "" and None
         # This is the core SELECT used by every method below.
         # For each entity, it fetches the four core fields (internalId,
         # title, publication_date, venue) plus two extra columns:
