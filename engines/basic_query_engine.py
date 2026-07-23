@@ -92,6 +92,9 @@ class BasicQueryEngine:
                         publication_date=row["publication_date"],  # pass publication date directly
                         venue=row["venue"],  # pass venue directly
                     )
+
+                    self._entity_cache[id] = entity
+                    return entity
         
         # first add the entity, even if it's None, to the cache dictionary, then return it
         self._entity_cache[id] = entity
