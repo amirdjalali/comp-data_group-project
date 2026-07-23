@@ -76,6 +76,9 @@ class BasicQueryEngine:
                                       citing_entity=citing,
                                       cited_entity=cited)
 
+                    self._entity_cache[id] = entity
+                    return entity
+
         if entity is None:    
             for bib_qh in self.bibliographicEntityQuery:  # loop through all bibliographic query handlers
                 df = bib_qh.getById(id)  # ask the handler to search the relational database for this id
